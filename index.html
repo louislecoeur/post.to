@@ -154,9 +154,8 @@
 
     function resizeInput() {
       // Reset the height so it can shrink when deleting content.      
-      messageInput.style.height = 'auto';
+      messageInput.style.height = '45px';
       // Set the height to the smaller of the content's scrollHeight or 50% of the viewport.
-      
       messageInput.style.height = Math.max(45, Math.min(messageInput.scrollHeight, window.innerHeight * 0.5)) + 'px';
     }
     
