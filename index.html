@@ -21,6 +21,8 @@
     }
     
     html, body {
+      margin:0;
+      padding:0;
       height: 100%;
       font-family: "JetBrains Mono", "SF Mono", Consolas, monospace;
       letter-spacing: 0.03em;
@@ -83,6 +85,7 @@
     /* Input area styling */
     #input-area {
       display: flex;
+      overflow:hidden;
       align-items: center;
       background-color: rgb(27, 27, 27);
       margin-top: 1px;
@@ -150,11 +153,6 @@
       color: white;               /* Black arrow */
     }
     
-    #sendButton svg {
-      fill: white;
-      width: 24px;
-      height: 24px;
-    }
   </style>
 </head>
 <body>
@@ -165,10 +163,6 @@
     <div id="input-area">
       <textarea id="messageInput" autofocus placeholder="..."></textarea>
       <button id="sendButton" title="Send">
-        <!-- Envelope SVG Icon 
-        <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="30" cy="30" r="28" fill="white" />
-        </svg>-->
         <span class="arrow">➤</span>
       </button>
     </div>
