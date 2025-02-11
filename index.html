@@ -83,28 +83,42 @@
     }
     
     /* Input area styling */
+    /* Input area styling – no flex layout, letting content determine the height */
     #input-area {
       position: relative;
       width: 100%;
-      overflow: hidden;
-      background-color: rgb(27, 27, 27);
-      margin-top: 1px;
-      box-shadow: 0 1px 2px rgba(255, 255, 255, 1);
+      /* No fixed height here so it will adjust with the textarea’s content */
     }
-    /* The message input is now a textarea */
+    
+    /* The message textarea fills the full width, but reserves 45px on the right for the button */
     #messageInput {
+      display: block;
       width: 100%;
-      border: none;
       padding: 10px;
-      padding-right: 45px; /* reserve space for the button */
+      padding-right: 45px;  /* reserve space for the button */
       font-size: 15px;
-      resize: none;
-      max-height: 50vh;
       line-height: 1.5;
-      min-height: 45px;
-      height: 45px;
+      min-height: 45px;     /* minimum height (about 3 lines) */
+      max-height: 50vh;     /* maximum height if content grows */
+      resize: none;
+      box-sizing: border-box;
       background-color: rgb(27, 27, 27);
       overflow: auto;
+    }
+
+    /* The send button is positioned absolutely over the reserved right area */
+    #sendButton {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 45px;
+      height: 100%;  /* It will match the height of #input-area (which is determined by the textarea) */
+      background-color: transparent; /* Matches the textarea background */
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     /* Hide scrollbar in WebKit browsers */
     #messageInput::-webkit-scrollbar {
@@ -127,21 +141,6 @@
       outline: none;
       background-color: rgb(15, 15, 15); /* Use your preferred color */
       transition: background-color 0.2s ease-in-out;
-    }
-        
-    /* Position the send button absolutely in the reserved area */
-    #sendButton {
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 45px;
-      height: 100%;
-      background-color: transparent;
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
 
     #sendButton .arrow {
