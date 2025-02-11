@@ -11,150 +11,140 @@
       margin: 0;
       padding: 0;
     }
-
+    
     @font-face {
       font-family: "JetBrains Mono";
       src: url("webfonts/JetBrainsMono-Regular.woff2") format("woff2");
       font-weight: normal;
       font-style: normal;
-      font-display: swap; /* Ensures text remains visible during loading */
+      font-display: swap;
     }
     
+    /* Global styles */
     html, body {
-      margin:0;
-      padding:0;
       height: 100%;
+      width: 100%;
+      overflow-x: hidden;
       font-family: "JetBrains Mono", "SF Mono", Consolas, monospace;
       letter-spacing: 0.03em;
       background-color: rgb(27, 27, 27);
       color: rgb(215, 217, 217);
     }
     
-    html, body, #container, #input-area {
+    /* Ensure these elements span full width */
+    #container, #input-area {
       width: 100%;
       max-width: 100%;
-      overflow-x: hidden;
     }
     
-    /* Container takes up full height */
+    /* Container takes full height and uses flexbox */
     #container {
       display: flex;
       flex-direction: column;
-      height: 100%;    
+      height: 100%;
     }
     
+    /* Inherit fonts and remove borders, margins, and radii for inputs */
     input, textarea {
       font-family: inherit;
-      letter-spacing: inherit; /* Adjust the value as needed */      
+      letter-spacing: inherit;
       color: inherit;
       background-color: inherit;
       border: none;
-      padding: none;
-      margin: none;
+      margin: 0;
       border-radius: 0;
     }
     
-    /* Log textarea (read-only) occupies the top part */
+    /* Log textarea styles */
     #log {
       flex: 1;
-      width: 100%;
-      max-width: 100%;
-      border: none;
       padding: 15px;
       font-size: 17px;
+      line-height: 1.5;
       resize: none;
       background-color: rgb(27, 27, 27);
       overflow-y: auto;
-      line-height: 1.5;
     }
     
+    /* Scrollbar styling for #log */
     #log::-webkit-scrollbar {
       width: 8px;
     }
-    
     #log::-webkit-scrollbar-track {
-      background: rgb(27, 27, 27); /* match the background */
+      background: rgb(27, 27, 27);
     }
-    
     #log::-webkit-scrollbar-thumb {
-      background-color: rgb(70, 70, 70); /* dark grey thumb */
+      background-color: rgb(70, 70, 70);
       border-radius: 4px;
     }
-
     #log {
       scrollbar-width: thin;
       scrollbar-color: rgb(70,70,70) rgb(27,27,27);
     }
     
-    /* Input area styling */
-    /* Input area styling – no flex layout, letting content determine the height */
+    /* Input area (conversation area) styling */
     #input-area {
       position: relative;
-      width: 100%;
-      padding: 0px;
-      margin: 0px;
-      border-top: solid 1px rgb(101, 101, 101);
-      /* No fixed height here so it will adjust with the textarea’s content */
+      border-top: 1px solid rgb(101, 101, 101);
     }
     
-    /* The message textarea fills the full width, but reserves 45px on the right for the button */
+    /* Message textarea */
     #messageInput {
       display: block;
+      width: 100%;
       padding: 15px;
-      padding-right: 60px;  /* reserve space for the button */
+      padding-right: 60px; /* reserve space for the button */
       font-size: 17px;
       line-height: 1.5;
-      box-sizing: border-box;
-      height: 55px;     /* minimum height (about 3 lines) */
-      max-height: 50vh;     /* maximum height if content grows */
+      height: 55px;       /* minimum height (about 3 lines) */
+      max-height: 50vh;   /* maximum height if content grows */
       resize: none;
-      width: 100%;
-      background-color: rgb(27, 27, 27);
       overflow: auto;
     }
-
-    /* The send button is positioned absolutely over the reserved right area */
+    
+    /* Hide scrollbars for #messageInput */
+    #messageInput::-webkit-scrollbar {
+      width: 0;
+      background: transparent;
+    }
+    #messageInput {
+      scrollbar-width: none;
+    }
+    
+    /* Focus styling for message textarea (but not for #log) */
+    #messageInput:focus {
+      outline: none;
+      background-color: rgb(15, 15, 15);
+      transition: background-color 0.2s ease-in-out;
+    }
+    
+    /* Optional: Remove focus styling for #log if desired */
+    #log:focus {
+      outline: none;
+      background-color: rgb(15, 15, 15);
+      transition: background-color 0.2s ease-in-out;
+    }
+    
+    /* Send button styling */
     #sendButton {
       position: absolute;
       top: 0;
       right: 0;
       width: 55px;
-      height: 100%;  /* It will match the height of #input-area (which is determined by the textarea) */
-      background-color: transparent; /* Matches the textarea background */
+      height: 100%;
+      background-color: transparent;
       border: none;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    /* Hide scrollbar in WebKit browsers */
-    #messageInput::-webkit-scrollbar {
-      width: 0;
-      background: transparent;
-    }
     
-    /* Hide scrollbar in Firefox */
-    #messageInput {
-      scrollbar-width: none;
-    }
-
-    #messageInput:focus {
-      outline: none;
-      background-color:  rgb(15, 15, 15); /* Use any light color you prefer */
-      transition: background-color 0.2s ease-in-out;
-    }
-
-    #log:focus {
-      outline: none;
-      background-color: rgb(15, 15, 15); /* Use your preferred color */
-      transition: background-color 0.2s ease-in-out;
-    }
-
+    /* Arrow inside send button (rotated arrowhead) */
     #sendButton .arrow {
-      display: block;
-      transform: rotate(-90deg);  /* Rotates the arrow to point upward */
-      font-size: 25px;            /* Adjust as needed */
-      color: white;               /* Black arrow */
+      transform: rotate(-90deg);
+      font-size: 25px;
+      color: white;
     }
     
   </style>
