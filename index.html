@@ -84,31 +84,28 @@
     
     /* Input area styling */
     #input-area {
-      display: flex;
-      overflow:hidden;
-      align-items: center;
+      position: relative;
+      width: 100%;
+      overflow: hidden;
       background-color: rgb(27, 27, 27);
       margin-top: 1px;
-      box-shadow: 0 1px 2px rgba(255, 255, 255, 1); 
+      box-shadow: 0 1px 2px rgba(255, 255, 255, 1);
     }
     /* The message input is now a textarea */
     #messageInput {
-      flex: 1;
+      width: 100%;
       border: none;
       padding: 10px;
+      padding-right: 45px; /* reserve space for the button */
       font-size: 15px;
       resize: none;
-      height: 60px;
-      overflow: auto;
-      resize: none;
-      max-height: 50vh; /* Limits the textarea height to half the viewport */
+      max-height: 50vh;
       line-height: 1.5;
-      /*min-height: calc(1.5em * 3);*/ /* Minimum height for 3 lines of text */
       min-height: 45px;
       height: 45px;
-      background-color: rgb(27, 27, 27); 
+      background-color: rgb(27, 27, 27);
+      overflow: auto;
     }
-
     /* Hide scrollbar in WebKit browsers */
     #messageInput::-webkit-scrollbar {
       width: 0;
@@ -132,18 +129,19 @@
       transition: background-color 0.2s ease-in-out;
     }
         
-    /* The send button styling */
+    /* Position the send button absolutely in the reserved area */
     #sendButton {
+      position: absolute;
+      top: 0;
+      right: 0;
       width: 45px;
-      background-color: rgb(15, 15, 15); /* Green background */
+      height: 100%;
+      background-color: transparent;
       border: none;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0;
-      padding: 0;
-      align-self: stretch; /* Makes the button fill the parent's height */
     }
 
     #sendButton .arrow {
