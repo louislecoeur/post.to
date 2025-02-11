@@ -182,9 +182,13 @@
     }
     // Listen for Shift+Enter in the message input to send the message.
     messageInput.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter' && e.shiftKey) {
-        e.preventDefault(); // Prevent newline insertion
-        sendMessage();
+      if (e.key === 'Enter') { //  && e.shiftKey
+        if (!e.shiftKey) {
+          // Prevent the default newline insertion and send the message
+          e.preventDefault();
+          sendMessage();
+        }
+        // If Shift+Enter, do nothing: the browser will insert a newline
       }
     });
     
