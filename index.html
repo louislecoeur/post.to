@@ -32,17 +32,12 @@
       background-color: #fff;
       overflow-y: auto;
     }
-    /* A simple horizontal line separator */
-    hr {
-      border: none;
-      border-top: 1px solid #ccc;
-    }
     /* Input area styling */
     #input-area {
       display: flex;
       align-items: center;
       background-color: #fff;
-      border-top: 1px solid #ccc;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
     }
     /* The message input is now a textarea */
     #messageInput {
@@ -77,7 +72,6 @@
   <div id="container">
     <!-- Log output textarea -->
     <textarea id="log" readonly placeholder="Logs will appear here..."></textarea>
-    <hr>
     <!-- Input area with multi-line input and send button -->
     <div id="input-area">
       <textarea id="messageInput" placeholder="Type your message here (Shift+Enter to send)"></textarea>
