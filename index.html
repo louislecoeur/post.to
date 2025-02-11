@@ -87,6 +87,14 @@
       padding: 0;
       align-self: stretch; /* Makes the button fill the parent's height */
     }
+
+    #sendButton .arrow {
+      display: block;
+      transform: rotate(-90deg);  /* Rotates the arrow to point upward */
+      font-size: 24px;            /* Adjust as needed */
+      color: black;               /* Black arrow */
+    }
+    
     #sendButton svg {
       fill: white;
       width: 24px;
@@ -102,10 +110,11 @@
     <div id="input-area">
       <textarea id="messageInput" placeholder="Message"></textarea>
       <button id="sendButton" title="Send">
-        <!-- Envelope SVG Icon -->
+        <!-- Envelope SVG Icon 
         <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
           <circle cx="30" cy="30" r="28" fill="white" />
-        </svg>
+        </svg>-->
+        <span class="arrow">➤</span>
       </button>
     </div>
   </div>
