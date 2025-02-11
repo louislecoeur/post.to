@@ -55,7 +55,6 @@
     /* The send button styling */
     #sendButton {
       width: 60px;
-      height: 60px;
       background-color: #4CAF50; /* Green background */
       border: none;
       cursor: pointer;
@@ -64,6 +63,7 @@
       justify-content: center;
       margin: 0;
       padding: 0;
+      align-self: stretch; /* Makes the button fill the parent's height */
     }
     #sendButton svg {
       fill: white;
@@ -113,29 +113,31 @@
       };
     }
 
-    // Send message via WebSocket and clear the input.
-    function sendMessage() {
-      const input = document.getElementById('messageInput');
-      const message = input.value.trim();
-      if (ws && ws.readyState === WebSocket.OPEN && message) {
-        ws.send(message);
-        logMessage("Sent: " + message);
-        input.value = "";
-      }
-    }
-
     // Button click sends the message.
     const sendButton = document.getElementById('sendButton');
     sendButton.addEventListener('click', sendMessage);
     
     const messageInput = document.getElementById('messageInput');
-    messageInput.addEventListener('input', function() {
-      // Reset the height so it can shrink when deleting content.
+
+    function resizeInput() {
+      // Reset the height so it can shrink when deleting content.      
       this.style.height = 'auto';
       // Set the height to the smaller of the content's scrollHeight or 50% of the viewport.
       this.style.height = Math.min(this.scrollHeight, window.innerHeight * 0.5) + 'px';
-    });
+    }
+    
+    messageInput.addEventListener('input', resizeInput);
 
+    // Send message via WebSocket and clear the input.
+    function sendMessage() {
+      const message = messageInput.value.trim();
+      if (ws && ws.readyState === WebSocket.OPEN && message) {
+        ws.send(message);
+        logMessage("Sent: " + message);
+        messageInput.value = "";
+        resizeInput();
+      }
+    }
     // Listen for Shift+Enter in the message input to send the message.
     messageInput.addEventListener('keydown', function(e) {
       if (e.key === 'Enter' && e.shiftKey) {
@@ -143,7 +145,7 @@
         sendMessage();
       }
     });
-
+    
     // Connect the WebSocket when the page loads.
     connectWebSocket();
   </script>
