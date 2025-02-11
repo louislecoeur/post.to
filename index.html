@@ -133,24 +133,25 @@
     }
         
     /* The send button styling */
-    #sendButton {
-      width: 45px;
-      background-color: #4CAF50; /* Green background */
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0;
-      padding: 0;
-      align-self: stretch; /* Makes the button fill the parent's height */
-    }
-
-    #sendButton .arrow {
-      display: block;
-      transform: rotate(-90deg);  /* Rotates the arrow to point upward */
-      font-size: 27px;            /* Adjust as needed */
-      color: white;               /* Black arrow */
+      #sendButton {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background-color: inherit; /* Green background */
+        border: none;
+        cursor: pointer;
+        position: relative; /* Establish positioning context for the arrow */
+      }
+      
+      #sendButton .arrow {
+        position: absolute;
+        bottom: 5px;         /* Adjust as needed for vertical alignment */
+        left: 50%;           /* Center horizontally */
+        transform: translateX(-50%) rotate(-90deg); /* Center and rotate arrow upward */
+        font-size: 27px;
+        color: white;
+      }
+    
     }
     
   </style>
