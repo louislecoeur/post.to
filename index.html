@@ -53,6 +53,25 @@
       overflow-y: auto;
       line-height: 1.5;
     }
+    
+    #log::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    #log::-webkit-scrollbar-track {
+      background: rgb(27, 27, 27); /* match the background */
+    }
+    
+    #log::-webkit-scrollbar-thumb {
+      background-color: rgb(70, 70, 70); /* dark grey thumb */
+      border-radius: 4px;
+    }
+
+    #log {
+      scrollbar-width: thin;
+      scrollbar-color: rgb(70,70,70) rgb(27,27,27);
+    }
+    
     /* Input area styling */
     #input-area {
       display: flex;
