@@ -62,14 +62,18 @@
       min-height: calc(1.5em * 3); /* Minimum height for 3 lines of text */
     }
 
-    #messageInput:focus, #log:focus {
+    #messageInput:focus {
       outline: none;
-      background-color: #f0f0f0; /* Use any light color you prefer */
+      background-color: #E0f0E0; /* Use any light color you prefer */
       transition: background-color 0.2s ease-in-out;
     }
 
-    
-    
+    #log:focus {
+      outline: none;
+      background-color: #ffffff; /* Use your preferred color */
+      transition: background-color 0.2s ease-in-out;
+    }
+        
     /* The send button styling */
     #sendButton {
       width: 60px;
