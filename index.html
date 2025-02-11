@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WebSocket Test Page</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2em; }
+    #log { width: 100%; height: 200px; }
+    #messageInput { width: 70%; }
+    #sendButton { padding: 0.5em 1em; }
+  </style>
+</head>
+<body>
+  <h1>WebSocket Test</h1>
+  <textarea id="log" readonly placeholder="Logs will appear here..."></textarea><br>
+  <input type="text" id="messageInput" placeholder="Type your message here">
+  <button id="sendButton">Send</button>
+
+  <script>
+    // Utility function to append messages to the log textarea.
+    function logMessage(message) {
+      const log = document.getElementById('log');
+      log.value += message + "\n";
+      log.scrollTop = log.scrollHeight;
+    }
+
+    let ws;
+
+    // Function to establish the WebSocket connection.
+    function connectWebSocket() {
+      // Note: Use wss:// for secure connections.
+      ws = new WebSocket('wss://post-save.louis-lecoeur.workers.dev/');
+
+      ws.onopen = () => {
+        logMessage("WebSocket connection opened.");
+      };
+
+      ws.onmessage = (event) => {
+        logMessage("Received: " + event.data);
+      };
+
+      ws.onerror = (error) => {
+        logMessage("WebSocket error: " + JSON.stringify(error));
+      };
+
+      ws.onclose = (event) => {
+        logMessage("WebSocket connection closed.");
+      };
+    }
+
+    // Set up the event listener for the Send button.
+    document.getElementById('sendButton').addEventListener('click', () => {
+      const input = document.getElementById('messageInput');
+      const message = input.value;
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(message);
+        logMessage("Sent: " + message);
+        input.value = "";
+      } else {
+        logMessage("WebSocket is not connected.");
+      }
+    });
+
+    // Initiate the connection when the page loads.
+    connectWebSocket();
+  </script>
+</body>
+</html>
