@@ -30,11 +30,13 @@
       height: 100%;
       width: 100%;
       overflow: hidden;
+      background-color: rgb(27, 27, 27);      
     }
 
     /* Big textarea occupies the whole page */
     #txtArea {
-      padding: 21px;
+      padding-top: 81px;
+      /*padding: 21px;*/
       padding-left: 65px;
       width: 100%;
       height: 100%;
@@ -50,32 +52,51 @@
       border: none;
     }
 
-    #rowNumbers {
-      padding-top: 21px;
-      width: 61px;		
-      position: absolute;
-      height: 100%;
-      color: #515149;
-      background-color: rgb(27, 27, 27);
-      left: 0;
-      top: 0;
-      cursor: pointer;
-      text-align: center;
-    }
+	#rowNumbers {
+	  padding-top: 27px;
+	  width: 61px;
+	  position: absolute;
+	  height: 100%;
+	  color: rgba(255, 255, 255, 0.15);
+	  background-color: rgb(27, 27, 27);
+	  left: 0;
+	  top: 0;
+	  cursor: pointer;
+	  text-align: center;
+	  pointer-events: none;
+	}
+
+	/* Style for all number divs */
+	#rowNumbers div {
+	  line-height: 27px; /* Adjust spacing between stacked numbers */
+	}
+
+	#rowNumbers div:last-child {
+	  color: rgba(255, 255, 255, 0.05);
+	}
 
 	/* Position the container absolutely in the top right corner */
 	#topButtons {
 	  position: absolute;
-	  top: 20px;
-	  right: 30px;
+	  top: 0px;
+	  left: 50%; 
+	  transform: translateX(-50%);  
+	  padding: 15px; /* Padding adds space around the buttons */
+	  padding-bottom: 13px;
+	  padding-top: 13px;
+	  background-color: rgba(87, 87, 85, 0.65);
 	  display: flex;
-	  flex-direction: row;  /* Show buttons side by side */
-	  gap: 20px;
-	  z-index: 1000; /* Ensure buttons appear above other elements */
+	  flex-direction: row; 
+	  gap: 20px; /* Space between buttons */
+	  z-index: 1000; 
+	  pointer-events: none;
+	  justify-content: center; /* Centers buttons within the container */
+	  border-radius: 0 0 30px 30px;
+	  /* Removed fixed width: 140px */
 	}
 
-	/* Common button styling */
 	#topButtons button {
+	  pointer-events: auto;
 	  width: 40px;
 	  height: 40px;
 	  border-radius: 50%;
@@ -89,15 +110,7 @@
 
 
 	/* "Push" button: green circle with an upward arrow */
-	#pushButton {
-	  background-color: #4CAF50; /* Green */
-	}
-
-	/* "Pull" button: blue circle with a downward arrow */
-	#pullButton {
-	  background-color: #2196F3; /* Blue */
-	}
-
+	/* "Add" button: light gray background with dark text */
 	/* Add a transition to the buttons for smooth effects */
 	#topButtons button {
 	  transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -106,7 +119,7 @@
 	/* On hover, scale up the button and add a subtle shadow */
 	#topButtons button:hover {
 	  transform: scale(1.1);
-	  box-shadow: 0px 0px 3px rgba(0, 0, 0, 1);
+	  /* box-shadow: 0px 0px 3px rgba(0, 0, 0, 1); */
 	}
 /* 
 	#topButtons button.active {
@@ -130,6 +143,16 @@
 	} */
 
 	/* Normal push button: green */
+
+	#addButton {
+	  background-color: #858585;
+	  color: white;
+	}
+
+	#addButton.active {
+	  background-color: #717171;
+	}
+
 	#pushButton {
 	  background-color: #4CAF50;
 	  color: white;
@@ -154,11 +177,21 @@
 
   </style>
 </head>
-<body contenteditable="false">
-	<textarea id="txtArea" autofocus placeholder=""></textarea>
+<body>
+	<textarea id="txtArea" spellcheck="false" autofocus placeholder=""></textarea>
 	<div id="rowNumbers"></div>
 
 	<div id="topButtons">
+	  <button id="addButton" aria-label="Add" title="Add">
+		  <svg width="16" height="16" viewBox="0 0 45.402 45.402" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+		    <g>
+		      <path d="M41.267,18.557H26.832V4.134C26.832,1.851,24.99,0,22.707,0c-2.283,0-4.124,1.851-4.124,4.135v14.432H4.141
+		        c-2.283,0-4.139,1.851-4.138,4.135c-0.001,1.141,0.46,2.187,1.207,2.934c0.748,0.749,1.78,1.222,2.92,1.222h14.453V41.27
+		        c0,1.142,0.453,2.176,1.201,2.922c0.748,0.748,1.777,1.211,2.919,1.211c2.282,0,4.129-1.851,4.129-4.133V26.857h14.435
+		        c2.283,0,4.134-1.867,4.133-4.15C45.399,20.425,43.548,18.557,41.267,18.557z"/>
+		    </g>
+		  </svg>	  
+	  </button>
 	  <button id="pushButton" aria-label="Push prompt" title="Push">
 	    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
 	      <path fill-rule="evenodd" clip-rule="evenodd" d="M15.1918 8.90615C15.6381 8.45983 16.3618 8.45983 16.8081 8.90615L21.9509 14.049C22.3972 14.4953 22.3972 15.2189 21.9509 15.6652C21.5046 16.1116 20.781 16.1116 20.3347 15.6652L17.1428 12.4734V22.2857C17.1428 22.9169 16.6311 23.4286 15.9999 23.4286C15.3688 23.4286 14.8571 22.9169 14.8571 22.2857V12.4734L11.6652 15.6652C11.2189 16.1116 10.4953 16.1116 10.049 15.6652C9.60265 15.2189 9.60265 14.4953 10.049 14.049L15.1918 8.90615Z" fill="currentColor"></path>
@@ -173,7 +206,16 @@
 
   <script>
 
+	const txtArea = document.getElementById("txtArea");
+	const rowNumbers = document.getElementById("rowNumbers");
+	const addButton = document.getElementById("addButton");
+	const pushButton = document.getElementById("pushButton");
+	const pullButton = document.getElementById("pullButton");
 
+
+  /****************************
+   * Helper functions *
+   ****************************/
 
 	function hash(x) {
 	  // For now, return x as is.
@@ -189,6 +231,19 @@
 	  // Identity for now.
 	  return x;
 	}
+
+	function generateRandomAnchor(length) {
+	  const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+	  let result = '';
+	  for (let i = 0; i < length; i++) {
+	    result += charset.charAt(Math.floor(Math.random() * charset.length));
+	  }
+	  return result;
+	}
+
+  /****************************
+   * Helper functions *
+   ****************************/
 
 	function addActiveListeners(button) {
 	  button.addEventListener("mousedown", () => {
@@ -209,126 +264,148 @@
 	  });
 	}
 
-	// Get your buttons.
-	const pushButton = document.getElementById("pushButton");
-	const pullButton = document.getElementById("pullButton");
-
 	// Apply the active listeners.
+	addActiveListeners(addButton);
 	addActiveListeners(pushButton);
 	addActiveListeners(pullButton);
 
-// Push button: post data when clicked.
-pushButton.addEventListener("click", async function() {
-  // Prevent double clicks if already disabled.
-  if (pushButton.disabled) return;
-  pushButton.disabled = true;
+	addButton.addEventListener("click", newDoc);
 
-  // Prepare payload.
-  const text = txtArea.value;
-  const compressedText = compress(text);
-  const anchorHash = hash(convAnchor);
+	// Push button: post data when clicked.
+	pushButton.addEventListener("click", async function() {
+	  // Prevent double clicks if already disabled.
+	  if (pushButton.disabled) return;
+	  pushButton.disabled = true;
 
-  try {
-    // Build the URL with the id as a query parameter.
-    // const url = "https://api.post.to/push?id=" + encodeURIComponent(anchorHash);
-    const url = "/push?id=" + encodeURIComponent(anchorHash);
-    // Send the POST with a plain text payload (only the data)
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain; charset=utf-8" },
-      body: compressedText
-    });
-    if (response.ok) {
-      console.log("Push successful");
-    } else {
-      console.error("Push failed with status", response.status);
-    }
-  } catch (err) {
-    console.error("Push error:", err);
-  } finally {
-    // Re-enable the button.
-    pushButton.disabled = false;
-  }
-});
+	  // Prepare payload.
+	  const text = txtArea.value;
+	  const compressedText = compress(text);
+	  const anchorHash = hash(convAnchor);
 
-// Pull button: GET data when clicked.
-pullButton.addEventListener("click", async function() {
-  if (pullButton.disabled) return;
-  pullButton.disabled = true;
+	  try {
+	    // Build the URL with the id as a query parameter.
+	    // const url = "https://api.post.to/push?id=" + encodeURIComponent(anchorHash);
+	    const url = "/push?id=" + encodeURIComponent(anchorHash);
+	    // Send the POST with a plain text payload (only the data)
+	    const response = await fetch(url, {
+	      method: "POST",
+	      headers: { "Content-Type": "text/plain; charset=utf-8" },
+	      body: compressedText
+	    });
+	    if (response.ok) {
+	      console.log("Push successful");
+	    } else {
+	      console.error("Push failed with status", response.status);
+	    }
+	  } catch (err) {
+	    console.error("Push error:", err);
+	  } finally {
+	    // Re-enable the button.
+	    pushButton.disabled = false;
+	  }
+	});
 
-  const anchorHash = hash(convAnchor);
-  try {
-    //const url = "https://api.post.to/pull?id=" + encodeURIComponent(anchorHash);
-    const url = "/pull?id=" + encodeURIComponent(anchorHash);
-    const response = await fetch(url);
-    if (response.ok) {
-      const result = await response.text();
-      txtArea.value = decompress(result);
-      console.log("Pull successful");
-    } else {
-      console.error("Pull failed with status", response.status);
-    }
-  } catch (err) {
-    console.error("Pull error:", err);
-  } finally {
-    // Re-enable after the pull operation.
-    pullButton.disabled = false;
-  }
-});
+	// Pull button: GET data when clicked.
+	async function pullRemote() {
+	  const anchorHash = hash(convAnchor);
+	  try {
+	    const url = "/pull?id=" + encodeURIComponent(anchorHash);
+	    const response = await fetch(url);
+	    if (response.ok) {
+	      const result = await response.text();
+	      let newText = decompress(result);
+	      let prevText = txtArea.value;
+	      if ( newText != prevText ) {
+			txtArea.value = newText;
+			saveContent();
+	  	  }
+	      console.log("Pull successful");
+	    } else {
+	      console.error("Pull failed with status", response.status);
+	    }
+	  } catch (err) {
+	    console.error("Pull error:", err);
+	  }
+	}
+
+	pullButton.addEventListener("click", async function() {
+	  if (pullButton.disabled) return;
+	  pullButton.disabled = true;
+	  await pullRemote();
+	  pullButton.disabled = false;
+	});
 
 
   /****************************
    * Conversation Anchor Code *
    ****************************/
-	// Global conversation anchor code.
-	let convAnchor = localStorage.getItem('conversationAnchor');
-	if (!convAnchor) {
-	  convAnchor = generateRandomAnchor(20);
-	  localStorage.setItem('conversationAnchor', convAnchor);
-	}
-	if (!window.location.hash) {
-	  window.location.hash = convAnchor;
-	} else if (window.location.hash.substring(1) !== convAnchor) {
-	  convAnchor = window.location.hash.substring(1);
-	  localStorage.setItem('conversationAnchor', convAnchor);
-	}
-	let contentKey = "content_" + convAnchor;
-	function generateRandomAnchor(length) {
-	  const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
-	  let result = '';
-	  for (let i = 0; i < length; i++) {
-	    result += charset.charAt(Math.floor(Math.random() * charset.length));
+
+	// Global variables
+	let convAnchor;
+	let contentKey;
+
+	function loadFromStorage() { 
+	  contentKey = "content_" + convAnchor;
+
+	  // Load any saved content for this anchor.
+	  let savedContent = localStorage.getItem(contentKey);
+	  if (savedContent !== null) {
+	    txtArea.value = savedContent;
+	    // Load caret position.
+	    let caretPosition = localStorage.getItem("caret_" + convAnchor);
+	    if (caretPosition !== null) {
+	      setTimeout(function() {
+	        txtArea.focus();
+	        txtArea.setSelectionRange(parseInt(caretPosition, 10), parseInt(caretPosition, 10));
+	      }, 0);
+	    }
+	    // Load scroll position.
+	    let savedScroll = localStorage.getItem("scroll_" + convAnchor);
+	    if (savedScroll !== null) {
+	      setTimeout(function() {
+	        txtArea.scrollTop = parseInt(savedScroll, 10);
+	        updateVisibleLineNumbers();
+	      }, 0);
+	    }
+	  } else {
+	      // If there's no saved content, clear the textarea and focus it.
+	      txtArea.value = "";
+	      setTimeout(function() {
+	        txtArea.focus();
+	      }, 0);	  	
 	  }
-	  return result;
 	}
 
-  /******************************************
-   * Load & Throttled Save Content to Storage *
-   ******************************************/
-  const txtArea = document.getElementById("txtArea");
-  const rowNumbers = document.getElementById("rowNumbers");
 
-  // Load any saved content for this anchor.
-  const savedContent = localStorage.getItem(contentKey);
-  if (savedContent !== null) {
-    txtArea.value = savedContent;
-    // Load caret position.
-    const caretPosition = localStorage.getItem("caret_" + convAnchor);
-    if (caretPosition !== null) {
-      setTimeout(function() {
-        txtArea.focus();
-        txtArea.setSelectionRange(parseInt(caretPosition, 10), parseInt(caretPosition, 10));
-      }, 0);
-    }
-    // Load scroll position.
-    const savedScroll = localStorage.getItem("scroll_" + convAnchor);
-    if (savedScroll !== null) {
-      setTimeout(function() {
-        txtArea.scrollTop = parseInt(savedScroll, 10);
-        updateVisibleLineNumbers();
-      }, 0);
-    }
-  }
+	// Global conversation anchor code.
+	if ( window.location.hash ) {
+		convAnchor = window.location.hash.substring(1);
+		contentKey = "content_" + convAnchor;
+		let savedContent = localStorage.getItem(contentKey);
+		if ( savedContent == null ) {
+			localStorage.setItem('conversationAnchor', convAnchor);
+		  	pullRemote();
+		 } else {
+		 	loadFromStorage()
+		 }
+	
+	} else {
+		convAnchor = localStorage.getItem('conversationAnchor');
+		if (!convAnchor) {
+		  convAnchor = generateRandomAnchor(20);
+		  contentKey = "content_" + convAnchor;
+		  localStorage.setItem('conversationAnchor', convAnchor);
+		} else {
+			loadFromStorage();
+			if(history.pushState) {
+			    history.pushState(null, null, '#' + convAnchor);
+			}
+			else {
+			    location.hash = '#' + convAnchor;
+			}
+		}
+	}
+
   
   // Throttle helper: ensures a function is called at most once every delay ms.
   function throttle(fn, delay) {
@@ -357,40 +434,54 @@ pullButton.addEventListener("click", async function() {
   /*****************************************
    * Update on Anchor (hashchange) Events  *
    *****************************************/
-  window.addEventListener("hashchange", function() {
+
+function newDoc() {
+	convAnchor = generateRandomAnchor(20);
+	contentKey = "content_" + convAnchor;
+	localStorage.setItem('conversationAnchor', convAnchor);
+
+	// If there's no saved content, clear the textarea and focus it.
+	txtArea.value = "";
+	setTimeout(function() {
+	txtArea.focus();
+	}, 0);	  	
+
+	if(history.pushState) {
+		history.pushState(null, null, '#' + convAnchor);
+	} else {
+		location.hash = '#' + convAnchor;
+	}
+}
+
+
+  function hashChangeHandler() {
     // Save current content, caret, and scroll for the old anchor.
+
     saveContent();
+    
     // Update convAnchor from the new URL hash.
     convAnchor = window.location.hash.substring(1);
-    localStorage.setItem('conversationAnchor', convAnchor);
-    // Update the key used for saving/loading content.
-    contentKey = "content_" + convAnchor;
-    // Load content for the new anchor, if it exists.
-    const newContent = localStorage.getItem(contentKey);
-    if (newContent !== null) {
-      txtArea.value = newContent;
-      const newCaret = localStorage.getItem("caret_" + convAnchor);
-      if (newCaret !== null) {
-        setTimeout(function() {
-          txtArea.focus();
-          txtArea.setSelectionRange(parseInt(newCaret, 10), parseInt(newCaret, 10));
-        }, 0);
-      }
-      const newScroll = localStorage.getItem("scroll_" + convAnchor);
-      if (newScroll !== null) {
-        setTimeout(function() {
-          txtArea.scrollTop = parseInt(newScroll, 10);
-          updateVisibleLineNumbers();
-        }, 0);
-      }
-    } else {
-      // If there's no saved content, clear the textarea and focus it.
-      txtArea.value = "";
-      setTimeout(function() {
-        txtArea.focus();
-      }, 0);
-    }
-  });
+
+	if (!convAnchor) {
+		newDoc();
+
+	} else {
+		// check if we have it in storage, and check remote too!
+
+		convAnchor = window.location.hash.substring(1);
+		contentKey = "content_" + convAnchor;
+		let savedContent = localStorage.getItem(contentKey);		
+		if ( savedContent == null ) {
+			localStorage.setItem('conversationAnchor', convAnchor);
+		  	pullRemote();
+		 } else {
+		 	loadFromStorage()
+		 }
+	}
+
+  }
+
+  window.addEventListener("hashchange", hashChangeHandler);
 
   /*********************
    * Line Number Logic *
@@ -405,11 +496,13 @@ pullButton.addEventListener("click", async function() {
     const totalHeight = txtArea.scrollHeight;
     const numTotalLines = Math.floor(totalHeight / lineHeight);
     const lastLine = Math.min(firstLine + numVisibleLines, numTotalLines);
-    let numbers = "";
-    for (let i = firstLine; i < lastLine; i++) {
-      numbers += (i === 0 ? "" : i) + "\n";
-    }
-    rowNumbers.innerText = numbers;
+	rowNumbers.innerHTML = ''; // Clear existing content
+
+	for (let i = firstLine; i < lastLine; i++) {
+	  const numberDiv = document.createElement('div');
+	  numberDiv.textContent = i <= 2 ? '\u200B' : (i-2); // Skip "0" if needed
+	  rowNumbers.appendChild(numberDiv);
+	}
     rowNumbers.style.transform = "translateY(-" + (Math.round(remainder * 1000) / 1000 + 27) + "px)";
   }
   
