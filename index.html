@@ -117,7 +117,7 @@
 	  background-color: #717171;
 	}
 
-	
+
 	/* You might also add a hover effect for normal state if desired
 	#topButtons button:hover:not(.disabled) {
 	  transform: scale(1.1);
@@ -216,9 +216,6 @@
 	pushButton.addEventListener("click", async function() {
 	  // Prevent double clicks if already disabled.
 	  if (pushButton.disabled) return;
-
-	  // Add active class to show pressed state and disable the button.
-	  pushButton.classList.add("active");
 	  pushButton.disabled = true;
 
 	  // Prepare payload.
@@ -243,8 +240,7 @@
 	  } catch (err) {
 	    console.error("Push error:", err);
 	  } finally {
-	    // Remove the active class and re-enable the button.
-	    pushButton.classList.remove("active");
+	    // Re-enable the button.
 	    pushButton.disabled = false;
 	  }
 	});
@@ -252,8 +248,8 @@
 	// Pull button: GET data when clicked.
 	pullButton.addEventListener("click", async function() {
 
-	  // Add active class for visual feedback.
-	  pullButton.classList.add("active");
+	  if (pullButton.disabled) return;
+	  pullButton.disabled = true;
 
 	  const anchorHash = hash(convAnchor);
 	  try {
@@ -268,8 +264,8 @@
 	  } catch (err) {
 	    console.error("Pull error:", err);
 	  } finally {
-	    // Remove the active class after the pull operation.
-	    pullButton.classList.remove("active");
+	    // Reenable after the pull operation.
+	    pullButton.disabled = false;
 	  }
 	});
 
