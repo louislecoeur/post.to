@@ -165,7 +165,7 @@
     <div id="log"></div>
     <!-- Input area with multi-line input and send button -->
     <div id="input-area">
-      <textarea id="messageInput" autofocus placeholder="…"></textarea>
+      <textarea id="messageInput" autofocus placeholder="..."></textarea>
       <button id="sendButton" title="Send">
         <span class="arrow">➤</span>
       </button>
@@ -180,7 +180,7 @@
       // Check localStorage for a saved conversation anchor.
       let convAnchor = localStorage.getItem('conversationAnchor');
       if (!convAnchor) {
-        convAnchor = generateRandomAnchor(18);
+        convAnchor = generateRandomAnchor(19);
         localStorage.setItem('conversationAnchor', convAnchor);
       }
       // Update URL hash if not set or if manually changed.
@@ -193,7 +193,7 @@
     
       function generateRandomAnchor(length) {
         // Use a charset with alphanumerics and a few safe special characters.
-        const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_~';
+        const charset = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz23456789';
         let result = '';
         for (let i = 0; i < length; i++) {
           result += charset.charAt(Math.floor(Math.random() * charset.length));
