@@ -44,29 +44,34 @@
       height: 100%;
     }
     
-    /* Inherit fonts and remove default borders/margins for inputs */
-    input, textarea {
+    /* Inherit fonts and remove default borders/margins for inputs and divs */
+    input, textarea, div {
       font-family: inherit;
       letter-spacing: inherit;
       color: inherit;
       background-color: inherit;
       border: none;
       margin: 0;
-      border-radius: 0;
+      padding: 0;
     }
     
-    /* Log textarea styles */
+    /* Log div styles for bottom alignment */
     #log {
       flex: 1;
       padding: 15px;
       font-size: 15px;
       line-height: 1.5;
-      resize: none;
       background-color: rgb(27, 27, 27);
       overflow-y: auto;
+      white-space: pre-wrap; /* Preserve newlines */
+      
+      /* Flex properties to push content to the bottom */
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
     }
     
-    /* Scrollbar styling for #log */
+    /* Scrollbar styling for #log (WebKit and Firefox) */
     #log::-webkit-scrollbar {
       width: 8px;
     }
@@ -93,11 +98,11 @@
       display: block;
       width: 100%;
       padding: 15px;
-      padding-right: 60px; /* reserve space for the send button */
+      padding-right: 60px; /* Reserve space for the send button */
       font-size: 15px;
       line-height: 1.5;
-      height: 55px;       /* minimum height (about 3 lines) */
-      max-height: 50vh;   /* maximum height if content grows */
+      height: 55px;       /* Minimum height (approx. 3 lines) */
+      max-height: 50vh;   /* Maximum height if content grows */
       resize: none;
       overflow: auto;
     }
@@ -156,8 +161,8 @@
 </head>
 <body>
   <div id="container">
-    <!-- Log output (plain text) -->
-    <textarea id="log" readonly></textarea>
+    <!-- Log output div -->
+    <div id="log"></div>
     <!-- Input area with multi-line input and send button -->
     <div id="input-area">
       <textarea id="messageInput" autofocus placeholder="…"></textarea>
@@ -200,12 +205,20 @@
     /*********************
      * WebSocket Logic   *
      *********************/
-    // Append messages to the log textarea.
+    // Append messages to the log div.
     function logMessage(message) {
       const log = document.getElementById('log');
-      log.value += message + "\n";
+      // Append the new message and a newline.
+      log.innerText += message + "\n";
       log.scrollTop = log.scrollHeight;
     }
+
+    // Intercept the copy event to ensure only plain text is copied.
+    document.getElementById('log').addEventListener('copy', function(e) {
+      e.preventDefault();
+      const text = this.innerText;
+      e.clipboardData.setData('text/plain', text);
+    });
 
     let ws;
     function connectWebSocket() {
@@ -242,7 +255,7 @@
     function resizeInput() {
       // Reset the height so it can shrink when deleting content.
       messageInput.style.height = '55px';
-      // Adjust height to the content's scrollHeight but cap it at 50% of the viewport.
+      // Adjust height to the content's scrollHeight but cap at 50% of the viewport.
       messageInput.style.height = Math.max(55, Math.min(messageInput.scrollHeight, window.innerHeight * 0.5)) + 'px';
     }
     
