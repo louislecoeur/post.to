@@ -214,25 +214,26 @@
 
 	// Push button: post data when clicked.
 	pushButton.addEventListener("click", async function() {
-
 	  // Prevent double clicks if already disabled.
 	  if (pushButton.disabled) return;
-	  
-	  // Add active class to show pressed state.
+
+	  // Add active class to show pressed state and disable the button.
 	  pushButton.classList.add("active");
-	  pushButton.disabled = true;  // disable button during async operation
+	  pushButton.disabled = true;
 
 	  // Prepare payload.
 	  const text = txtArea.value;
 	  const compressedText = compress(text);
 	  const anchorHash = hash(convAnchor);
-	  const payload = { data: compressedText, id: anchorHash };
 
 	  try {
-	    const response = await fetch("/push", {
+	    // Build the URL with the id as a query parameter.
+	    const url = "/push?id=" + encodeURIComponent(anchorHash);
+	    // Send the POST with a plain text payload (only the data)
+	    const response = await fetch(url, {
 	      method: "POST",
-	      headers: { "Content-Type": "application/json" },
-	      body: JSON.stringify(payload)
+	      headers: { "Content-Type": "text/plain; charset=utf-8" },
+	      body: compressedText
 	    });
 	    if (response.ok) {
 	      console.log("Push successful");
@@ -242,7 +243,7 @@
 	  } catch (err) {
 	    console.error("Push error:", err);
 	  } finally {
-	    // Remove active class and re-enable the button.
+	    // Remove the active class and re-enable the button.
 	    pushButton.classList.remove("active");
 	    pushButton.disabled = false;
 	  }
