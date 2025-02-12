@@ -230,7 +230,7 @@ pushButton.addEventListener("click", async function() {
 
   try {
     // Build the URL with the id as a query parameter.
-    const url = "https://api.yourdomain.com/push?id=" + encodeURIComponent(anchorHash);
+    const url = "https://api.post.to/push?id=" + encodeURIComponent(anchorHash);
     // Send the POST with a plain text payload (only the data)
     const response = await fetch(url, {
       method: "POST",
@@ -257,7 +257,7 @@ pullButton.addEventListener("click", async function() {
 
   const anchorHash = hash(convAnchor);
   try {
-    const url = "https://api.yourdomain.com/pull?id=" + encodeURIComponent(anchorHash);
+    const url = "https://api.post.to/pull?id=" + encodeURIComponent(anchorHash);
     const response = await fetch(url);
     if (response.ok) {
       const result = await response.text();
