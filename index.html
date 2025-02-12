@@ -44,7 +44,7 @@
       height: 100%;
     }
     
-    /* Inherit fonts and remove borders, margins, and radii for inputs */
+    /* Inherit fonts and remove default borders/margins for inputs */
     input, textarea {
       font-family: inherit;
       letter-spacing: inherit;
@@ -82,18 +82,18 @@
       scrollbar-color: rgb(70,70,70) rgb(27,27,27);
     }
     
-    /* Input area (conversation area) styling */
+    /* Input area styling */
     #input-area {
       position: relative;
       border-top: 1px solid rgb(101, 101, 101);
     }
     
-    /* Message textarea */
+    /* Message textarea styling */
     #messageInput {
       display: block;
       width: 100%;
       padding: 15px;
-      padding-right: 60px; /* reserve space for the button */
+      padding-right: 60px; /* reserve space for the send button */
       font-size: 15px;
       line-height: 1.5;
       height: 55px;       /* minimum height (about 3 lines) */
@@ -111,7 +111,7 @@
       scrollbar-width: none;
     }
     
-    /* Focus styling for message textarea (but not for #log) */
+    /* Focus styling for message input */
     #messageInput:focus {
       outline: none;
       background-color: rgb(15, 15, 15);
@@ -140,22 +140,27 @@
       justify-content: center;
     }
     
+    /* Disabled state for send button */
+    #sendButton:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+    
     /* Arrow inside send button (rotated arrowhead) */
     #sendButton .arrow {
       transform: rotate(-90deg);
       font-size: 25px;
       color: white;
     }
-    
   </style>
 </head>
 <body>
   <div id="container">
-    <!-- Log output textarea -->
+    <!-- Log output (plain text) -->
     <textarea id="log" readonly></textarea>
     <!-- Input area with multi-line input and send button -->
     <div id="input-area">
-      <textarea id="messageInput" autofocus placeholder="..."></textarea>
+      <textarea id="messageInput" autofocus placeholder="…"></textarea>
       <button id="sendButton" title="Send">
         <span class="arrow">➤</span>
       </button>
@@ -163,6 +168,38 @@
   </div>
 
   <script>
+    /***********************
+     * Conversation Anchor *
+     ***********************/
+    (function() {
+      // Check localStorage for a saved conversation anchor.
+      let convAnchor = localStorage.getItem('conversationAnchor');
+      if (!convAnchor) {
+        convAnchor = generateRandomAnchor(18);
+        localStorage.setItem('conversationAnchor', convAnchor);
+      }
+      // Update URL hash if not set or if manually changed.
+      if (!window.location.hash) {
+        window.location.hash = convAnchor;
+      } else if (window.location.hash.substring(1) !== convAnchor) {
+        convAnchor = window.location.hash.substring(1);
+        localStorage.setItem('conversationAnchor', convAnchor);
+      }
+    
+      function generateRandomAnchor(length) {
+        // Use a charset with alphanumerics and a few safe special characters.
+        const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_~';
+        let result = '';
+        for (let i = 0; i < length; i++) {
+          result += charset.charAt(Math.floor(Math.random() * charset.length));
+        }
+        return result;
+      }
+    })();
+    
+    /*********************
+     * WebSocket Logic   *
+     *********************/
     // Append messages to the log textarea.
     function logMessage(message) {
       const log = document.getElementById('log');
@@ -172,7 +209,10 @@
 
     let ws;
     function connectWebSocket() {
-      ws = new WebSocket('wss://post-save.louis-lecoeur.workers.dev/');
+      // Append the conversation anchor (from URL hash) as a query parameter.
+      const conv = window.location.hash.substring(1);
+      const wsUrl = 'wss://post-save.louis-lecoeur.workers.dev/?c=' + encodeURIComponent(conv);
+      ws = new WebSocket(wsUrl);
       ws.onopen = () => {
         logMessage("WebSocket connection opened.");
       };
@@ -184,6 +224,12 @@
       };
       ws.onclose = (event) => {
         logMessage("WebSocket connection closed.");
+        const sendButton = document.getElementById('sendButton');
+        const arrowSpan = sendButton.querySelector('.arrow');
+        if (arrowSpan) {
+          arrowSpan.textContent = "✖";
+        }
+        sendButton.disabled = true;
       };
     }
 
@@ -194,9 +240,9 @@
     const messageInput = document.getElementById('messageInput');
 
     function resizeInput() {
-      // Reset the height so it can shrink when deleting content.      
+      // Reset the height so it can shrink when deleting content.
       messageInput.style.height = '55px';
-      // Set the height to the smaller of the content's scrollHeight or 50% of the viewport.
+      // Adjust height to the content's scrollHeight but cap it at 50% of the viewport.
       messageInput.style.height = Math.max(55, Math.min(messageInput.scrollHeight, window.innerHeight * 0.5)) + 'px';
     }
     
@@ -213,15 +259,13 @@
         messageInput.focus();
       }
     }
-    // Listen for Shift+Enter in the message input to send the message.
+    // Listen for Enter (send on Enter, newline on Shift+Enter).
     messageInput.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') { //  && e.shiftKey
+      if (e.key === 'Enter') {
         if (!e.shiftKey) {
-          // Prevent the default newline insertion and send the message
           e.preventDefault();
           sendMessage();
         }
-        // If Shift+Enter, do nothing: the browser will insert a newline
       }
     });
     
