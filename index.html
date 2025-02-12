@@ -114,7 +114,7 @@
 	/* Additional styling for the disabled state of the push button */
 	#pushButton.disabled {
 	  opacity: 0.6;
-	  cursor: not-allowed;
+	  /*cursor: not-allowed;*/
 	  background-color: #388E3C; /* darker green */
 	}
 
@@ -122,6 +122,28 @@
 	#pushButton:hover:not(.disabled) {
 	  transform: scale(1.1);
 	  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+	}
+
+	/* Normal push button: green */
+	#pushButton {
+	  background-color: #4CAF50;
+	  color: white;
+	}
+
+	/* When active (pressed), make push button darker */
+	#pushButton.active {
+	  background-color: #388E3C;
+	}
+
+	/* Normal pull button: blue */
+	#pullButton {
+	  background-color: #2196F3;
+	  color: white;
+	}
+
+	/* When active (pressed), make pull button darker */
+	#pullButton.active {
+	  background-color: #1976D2;
 	}
 
   </style>
@@ -162,65 +184,64 @@
 	  return x;
 	}
 
-	// "Push" functionality.
+	// Push button: post data when clicked.
 	document.getElementById("pushButton").addEventListener("click", async function() {
 	  const pushButton = this;
+	  
 	  // Prevent double clicks if already disabled.
 	  if (pushButton.disabled) return;
+	  
+	  // Add active class to show pressed state.
+	  pushButton.classList.add("active");
+	  pushButton.disabled = true;  // disable button during async operation
 
-	  // Disable the push button and add a class to reflect the state.
-	  pushButton.disabled = true;
-	  pushButton.classList.add("disabled");
-
-	  // Get the textarea content and compress it.
+	  // Prepare payload.
 	  const text = txtArea.value;
 	  const compressedText = compress(text);
-	  // Get the hashed anchor.
 	  const anchorHash = hash(convAnchor);
-	  // Build the JSON payload.
-	  const payload = {
-	    data: compressedText,
-	    id: anchorHash
-	  };
+	  const payload = { data: compressedText, id: anchorHash };
 
 	  try {
 	    const response = await fetch("/push", {
 	      method: "POST",
-	      headers: {
-	        "Content-Type": "application/json"
-	      },
+	      headers: { "Content-Type": "application/json" },
 	      body: JSON.stringify(payload)
 	    });
 	    if (response.ok) {
 	      console.log("Push successful");
-	      // Optionally, update the button style further to indicate success.
 	    } else {
 	      console.error("Push failed with status", response.status);
 	    }
 	  } catch (err) {
 	    console.error("Push error:", err);
 	  } finally {
-	    // Re-enable the push button after completion.
+	    // Remove active class and re-enable the button.
+	    pushButton.classList.remove("active");
 	    pushButton.disabled = false;
-	    pushButton.classList.remove("disabled");
 	  }
 	});
 
-	// "Pull" functionality.
+	// Pull button: GET data when clicked.
 	document.getElementById("pullButton").addEventListener("click", async function() {
+	  const pullButton = this;
+	  // Add active class for visual feedback.
+	  pullButton.classList.add("active");
+
 	  const anchorHash = hash(convAnchor);
 	  try {
 	    const response = await fetch("/pull?id=" + encodeURIComponent(anchorHash));
 	    if (response.ok) {
-	      const result = await response.text(); // assume text response
-	      const decompressedText = decompress(result);
-	      txtArea.value = decompressedText;
+	      const result = await response.text();
+	      txtArea.value = decompress(result);
 	      console.log("Pull successful");
 	    } else {
 	      console.error("Pull failed with status", response.status);
 	    }
 	  } catch (err) {
 	    console.error("Pull error:", err);
+	  } finally {
+	    // Remove the active class after the pull operation.
+	    pullButton.classList.remove("active");
 	  }
 	});
 
