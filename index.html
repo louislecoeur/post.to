@@ -217,62 +217,62 @@
 	addActiveListeners(pushButton);
 	addActiveListeners(pullButton);
 
-	// Push button: post data when clicked.
-	pushButton.addEventListener("click", async function() {
-	  // Prevent double clicks if already disabled.
-	  if (pushButton.disabled) return;
-	  pushButton.disabled = true;
+// Push button: post data when clicked.
+pushButton.addEventListener("click", async function() {
+  // Prevent double clicks if already disabled.
+  if (pushButton.disabled) return;
+  pushButton.disabled = true;
 
-	  // Prepare payload.
-	  const text = txtArea.value;
-	  const compressedText = compress(text);
-	  const anchorHash = hash(convAnchor);
+  // Prepare payload.
+  const text = txtArea.value;
+  const compressedText = compress(text);
+  const anchorHash = hash(convAnchor);
 
-	  try {
-	    // Build the URL with the id as a query parameter.
-	    const url = "/push?id=" + encodeURIComponent(anchorHash);
-	    // Send the POST with a plain text payload (only the data)
-	    const response = await fetch(url, {
-	      method: "POST",
-	      headers: { "Content-Type": "text/plain; charset=utf-8" },
-	      body: compressedText
-	    });
-	    if (response.ok) {
-	      console.log("Push successful");
-	    } else {
-	      console.error("Push failed with status", response.status);
-	    }
-	  } catch (err) {
-	    console.error("Push error:", err);
-	  } finally {
-	    // Re-enable the button.
-	    pushButton.disabled = false;
-	  }
-	});
+  try {
+    // Build the URL with the id as a query parameter.
+    const url = "https://api.yourdomain.com/push?id=" + encodeURIComponent(anchorHash);
+    // Send the POST with a plain text payload (only the data)
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain; charset=utf-8" },
+      body: compressedText
+    });
+    if (response.ok) {
+      console.log("Push successful");
+    } else {
+      console.error("Push failed with status", response.status);
+    }
+  } catch (err) {
+    console.error("Push error:", err);
+  } finally {
+    // Re-enable the button.
+    pushButton.disabled = false;
+  }
+});
 
-	// Pull button: GET data when clicked.
-	pullButton.addEventListener("click", async function() {
+// Pull button: GET data when clicked.
+pullButton.addEventListener("click", async function() {
+  if (pullButton.disabled) return;
+  pullButton.disabled = true;
 
-	  if (pullButton.disabled) return;
-	  pullButton.disabled = true;
-
-	  const anchorHash = hash(convAnchor);
-	  try {
-	    const response = await fetch("/pull?id=" + encodeURIComponent(anchorHash));
-	    if (response.ok) {
-	      const result = await response.text();
-	      txtArea.value = decompress(result);
-	      console.log("Pull successful");
-	    } else {
-	      console.error("Pull failed with status", response.status);
-	    }
-	  } catch (err) {
-	    console.error("Pull error:", err);
-	  } finally {
-	    // Reenable after the pull operation.
-	    pullButton.disabled = false;
-	  }
-	});
+  const anchorHash = hash(convAnchor);
+  try {
+    const url = "https://api.yourdomain.com/pull?id=" + encodeURIComponent(anchorHash);
+    const response = await fetch(url);
+    if (response.ok) {
+      const result = await response.text();
+      txtArea.value = decompress(result);
+      console.log("Pull successful");
+    } else {
+      console.error("Pull failed with status", response.status);
+    }
+  } catch (err) {
+    console.error("Pull error:", err);
+  } finally {
+    // Re-enable after the pull operation.
+    pullButton.disabled = false;
+  }
+});
 
 
   /****************************
