@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WebSocket Test Page</title>
+  <title></title>
   <style>
     @font-face {
       font-family: "JetBrains Mono";
@@ -381,6 +381,8 @@
 	if ( window.location.hash ) {
 		convAnchor = window.location.hash.substring(1);
 		contentKey = "content_" + convAnchor;
+		document.title = "post.to/#" + convAnchor;
+
 		let savedContent = localStorage.getItem(contentKey);
 		if ( savedContent == null ) {
 			localStorage.setItem('conversationAnchor', convAnchor);
@@ -395,8 +397,11 @@
 		  convAnchor = generateRandomAnchor(20);
 		  contentKey = "content_" + convAnchor;
 		  localStorage.setItem('conversationAnchor', convAnchor);
+		  document.title = "post.to/#" + convAnchor;
+
 		} else {
 			loadFromStorage();
+			document.title = "post.to/#" + convAnchor;
 			if(history.pushState) {
 			    history.pushState(null, null, '#' + convAnchor);
 			}
@@ -446,6 +451,7 @@ function newDoc() {
 	txtArea.focus();
 	}, 0);	  	
 
+	document.title = "post.to/#" + convAnchor;
 	if(history.pushState) {
 		history.pushState(null, null, '#' + convAnchor);
 	} else {
@@ -470,6 +476,14 @@ function newDoc() {
 
 		convAnchor = window.location.hash.substring(1);
 		contentKey = "content_" + convAnchor;
+		
+		document.title = "post.to/#" + convAnchor;
+		if(history.pushState) {
+			history.pushState(null, null, '#' + convAnchor);
+		} else {
+			location.hash = '#' + convAnchor;
+		}
+
 		let savedContent = localStorage.getItem(contentKey);		
 		if ( savedContent == null ) {
 			localStorage.setItem('conversationAnchor', convAnchor);
@@ -478,6 +492,8 @@ function newDoc() {
 		 	loadFromStorage()
 		 }
 	}
+
+
 
   }
 
