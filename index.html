@@ -112,17 +112,18 @@
 	/* Common button styling already defined for #pushButton, etc. */
 
 	/* Additional styling for the disabled state of the push button */
-	#pushButton.disabled {
+	#topButtons button.disabled {
 	  opacity: 0.6;
-	  /*cursor: not-allowed;*/
-	  background-color: #388E3C; /* darker green */
+	  background-color: #717171;
 	}
 
-	/* You might also add a hover effect for normal state if desired */
-	#pushButton:hover:not(.disabled) {
+	
+	/* You might also add a hover effect for normal state if desired
+	#topButtons button:hover:not(.disabled) {
 	  transform: scale(1.1);
+	  background-color: #717171;	  
 	  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-	}
+	} */
 
 	/* Normal push button: green */
 	#pushButton {
@@ -184,10 +185,36 @@
 	  return x;
 	}
 
+	function addActiveListeners(button) {
+	  button.addEventListener("mousedown", () => {
+	    button.classList.add("active");
+	  });
+	  button.addEventListener("touchstart", () => {
+	    button.classList.add("active");
+	  });
+	  // Remove the active class when the pointer is released or leaves.
+	  button.addEventListener("mouseup", () => {
+	    button.classList.remove("active");
+	  });
+	  button.addEventListener("mouseleave", () => {
+	    button.classList.remove("active");
+	  });
+	  button.addEventListener("touchend", () => {
+	    button.classList.remove("active");
+	  });
+	}
+
+	// Get your buttons.
+	const pushButton = document.getElementById("pushButton");
+	const pullButton = document.getElementById("pullButton");
+
+	// Apply the active listeners.
+	addActiveListeners(pushButton);
+	addActiveListeners(pullButton);
+
 	// Push button: post data when clicked.
-	document.getElementById("pushButton").addEventListener("click", async function() {
-	  const pushButton = this;
-	  
+	pushButton.addEventListener("click", async function() {
+
 	  // Prevent double clicks if already disabled.
 	  if (pushButton.disabled) return;
 	  
@@ -222,8 +249,8 @@
 	});
 
 	// Pull button: GET data when clicked.
-	document.getElementById("pullButton").addEventListener("click", async function() {
-	  const pullButton = this;
+	pullButton.addEventListener("click", async function() {
+
 	  // Add active class for visual feedback.
 	  pullButton.classList.add("active");
 
