@@ -338,8 +338,8 @@
 	    crypto.subtle.digest("SHA-256", data2)
 	  ]);
 
-	  // h1: crop to the first 16 bytes.
-	  const h1 = new Uint8Array(hashBuffer1).slice(0, 16);
+	  // h1: crop to the first 30 bytes (240 bits).
+	  const h1 = new Uint8Array(hashBuffer1).slice(0, 30);
 	  // Convert to Base64.
 	  let base64 = bufferToBase64Url(h1);
 	  
@@ -389,16 +389,10 @@
 	  return plainBuffer;
 	}
 
-	function generateRandomAnchor(length) {
-	  const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-	  const result = [];
-	  const randomValues = new Uint8Array(length);
-	  crypto.getRandomValues(randomValues);
-	  for (let i = 0; i < length; i++) {
-	    // Use the random value to index into the charset.
-	    result.push(charset[randomValues[i] % charset.length]);
-	  }
-	  return result.join('');
+	function generateRandomAnchor() {
+	   let randomBytes = new Uint8Array(30);  // 18*8=144 bits or 21*8 = 168 bits or 30*8 = 240?
+	   crypto.getRandomValues(randomBytes);
+	   return bufferToBase64Url(randomBytes);
 	}
 
   /****************************
