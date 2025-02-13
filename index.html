@@ -265,12 +265,12 @@
    * Helper functions *
    ****************************/
 
+	/*
 	function hash(x) {
 	  // For now, return x as is.
 	  return x;
 	}
 
-	/*
 	function compress(x) {
 	  // Identity for now.
 	  return x;
@@ -282,40 +282,123 @@
 	}
 	*/
 
-	// Asynchronous function to compress text into a gzip binary.
-	async function compressTextToGzip(text) {
+		// Asynchronous function to compress text into a gzip binary.
+		async function compressTextToGzip(text) {
+		  const encoder = new TextEncoder();
+		  const inputData = encoder.encode(text);
+
+		  const cs = new CompressionStream("gzip");
+		  const writer = cs.writable.getWriter();
+		  writer.write(inputData);
+		  writer.close();
+
+		  const compressedResponse = new Response(cs.readable);
+		  const compressedData = await compressedResponse.arrayBuffer();
+		  return compressedData;
+		}
+
+		// Asynchronous function to decompress a gzip binary back to text.
+		async function uncompressGzipToText(gzipData) {
+		  const uint8Data = new Uint8Array(gzipData);
+		  const compressedStream = new Response(uint8Data).body;
+		  const ds = new DecompressionStream("gzip");
+		  const decompressedStream = compressedStream.pipeThrough(ds);
+		  const decompressedResponse = new Response(decompressedStream);
+		  const text = await decompressedResponse.text();
+		  return text;
+		}
+
+
+		// Global cache for computed hashes (seed → { anchorHash, h2 }).
+	let computedHashes = {};
+
+	// Helper: Convert a Uint8Array (or ArrayBuffer) to a base64url encoded string.
+	function bufferToBase64Url(buffer) {
+	  let binary = "";
+	  const bytes = new Uint8Array(buffer);
+	  for (let i = 0; i < bytes.byteLength; i++) {
+	    binary += String.fromCharCode(bytes[i]);
+	  }
+	  // Standard base64
+	  let base64 = btoa(binary);
+	  // Convert to base64url by replacing characters and removing padding.
+	  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); // removes the last "=="
+	}
+
+	// Helper: Compute anchorHash (h1 cropped & Base64-encoded with no trailing "=")
+	// and h2 from a seed.
+	async function computeHashes(seed) {
 	  const encoder = new TextEncoder();
-	  const inputData = encoder.encode(text);
+	  const data1 = encoder.encode(seed + "salt1");
+	  const data2 = encoder.encode(seed + "salt2");
 
-	  const cs = new CompressionStream("gzip");
-	  const writer = cs.writable.getWriter();
-	  writer.write(inputData);
-	  writer.close();
+	  // Compute both digests concurrently.
+	  const [hashBuffer1, hashBuffer2] = await Promise.all([
+	    crypto.subtle.digest("SHA-256", data1),
+	    crypto.subtle.digest("SHA-256", data2)
+	  ]);
 
-	  const compressedResponse = new Response(cs.readable);
-	  const compressedData = await compressedResponse.arrayBuffer();
-	  return compressedData;
+	  // h1: crop to the first 16 bytes.
+	  const h1 = new Uint8Array(hashBuffer1).slice(0, 16);
+	  // Convert to Base64.
+	  let base64 = bufferToBase64Url(h1);
+	  
+	  return {
+	    anchorHash: base64, // This is our record ID.
+	    h2: new Uint8Array(hashBuffer2) // AES key raw material.
+	  };
 	}
 
-	// Asynchronous function to decompress a gzip binary back to text.
-	async function uncompressGzipToText(gzipData) {
-	  const uint8Data = new Uint8Array(gzipData);
-	  const compressedStream = new Response(uint8Data).body;
-	  const ds = new DecompressionStream("gzip");
-	  const decompressedStream = compressedStream.pipeThrough(ds);
-	  const decompressedResponse = new Response(decompressedStream);
-	  const text = await decompressedResponse.text();
-	  return text;
+	// Helper: Import a raw key (Uint8Array) as an AES-GCM key.
+	async function importAesKey(rawKey) {
+	  return await crypto.subtle.importKey(
+	    "raw",
+	    rawKey,
+	    { name: "AES-GCM" },
+	    false, // non-extractable
+	    ["encrypt", "decrypt"]
+	  );
 	}
 
+	// Helper: Encrypt an ArrayBuffer with AES-GCM.
+	// Returns an ArrayBuffer with IV (12 bytes) prepended to the ciphertext.
+	async function encryptData(dataBuffer, aesKey) {
+	  const iv = crypto.getRandomValues(new Uint8Array(12));
+	  const cipherBuffer = await crypto.subtle.encrypt(
+	    { name: "AES-GCM", iv },
+	    aesKey,
+	    dataBuffer
+	  );
+	  const ivAndCipher = new Uint8Array(iv.byteLength + cipherBuffer.byteLength);
+	  ivAndCipher.set(iv, 0);
+	  ivAndCipher.set(new Uint8Array(cipherBuffer), iv.byteLength);
+	  return ivAndCipher.buffer;
+	}
+
+	// Helper: Decrypt an ArrayBuffer with AES-GCM.
+	// Expects the first 12 bytes to be the IV.
+	async function decryptData(encryptedBuffer, aesKey) {
+	  const encryptedArray = new Uint8Array(encryptedBuffer);
+	  const iv = encryptedArray.slice(0, 12);
+	  const ciphertext = encryptedArray.slice(12);
+	  const plainBuffer = await crypto.subtle.decrypt(
+	    { name: "AES-GCM", iv },
+	    aesKey,
+	    ciphertext
+	  );
+	  return plainBuffer;
+	}
 
 	function generateRandomAnchor(length) {
 	  const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-	  let result = '';
+	  const result = [];
+	  const randomValues = new Uint8Array(length);
+	  crypto.getRandomValues(randomValues);
 	  for (let i = 0; i < length; i++) {
-	    result += charset.charAt(Math.floor(Math.random() * charset.length));
+	    // Use the random value to index into the charset.
+	    result.push(charset[randomValues[i] % charset.length]);
 	  }
-	  return result;
+	  return result.join('');
 	}
 
   /****************************
@@ -379,61 +462,92 @@
 
 	addButton.addEventListener("click", newDoc);
 
+	// -------------------- PUSH --------------------
 
 	// Push button: post data when clicked.
 	pushButton.addEventListener("click", async function() {
-	  // Prevent double clicks if already disabled.
 	  if (pushButton.disabled) return;
 	  pushButton.disabled = true;
 
-	  // Prepare payload.
-	  const text = txtArea.value;
-	  // Await the asynchronous compression.
-	  const compressedText = await compressTextToGzip(text);
-	  const anchorHash = hash(convAnchor);
-
 	  try {
-	    // Build the URL with the id as a query parameter.
+	    // convAnchor is your seed (a base62 string).
+	    const seed = convAnchor;
+	    
+	    // Use cached computed hashes if available.
+	    if (!computedHashes[seed]) {
+	      computedHashes[seed] = await computeHashes(seed);
+	    }
+	    const { anchorHash, h2 } = computedHashes[seed];
+
+	    // Prepare the payload.
+	    const text = txtArea.value;
+	    // Compress the text (returns an ArrayBuffer).
+	    const compressedData = await compressTextToGzip(text);
+
+	    // Derive an AES key from h2.
+	    const aesKey = await importAesKey(h2);
+
+	    // Encrypt the compressed data.
+	    const encryptedData = await encryptData(compressedData, aesKey);
+
+	    // Build the URL with the record ID.
 	    const url = "/push?id=" + encodeURIComponent(anchorHash);
-	    // Send the POST with a binary payload.
+
+	    // Send the POST with the encrypted binary payload.
 	    const response = await fetch(url, {
 	      method: "POST",
-	      headers: { "Content-Type": "application/octet-stream" },
-	      body: compressedText
+	      headers: {
+	        "Content-Type": "application/octet-stream",
+	        "Content-Encoding": "identity"
+	      },
+	      body: encryptedData
 	    });
+
 	    if (response.ok) {
-	      // Push successful.
+	      console.log("Push successful");
 	    } else {
 	      console.error("Push failed with status", response.status);
 	    }
 	  } catch (err) {
 	    console.error("Push error:", err);
 	  } finally {
-	    // Re-enable the button.
 	    pushButton.disabled = false;
 	  }
 	});
 
+	// -------------------- PULL --------------------
 
-	// Pull button: GET data when clicked.
 	async function pullRemote() {
-	  // this.classList.remove("active");
+	  // convAnchor is your seed.
+	  const seed = convAnchor;
+	  
+	  // Use cached computed hashes if available.
+	  if (!computedHashes[seed]) {
+	    computedHashes[seed] = await computeHashes(seed);
+	  }
+	  const { anchorHash, h2 } = computedHashes[seed];
 
-	  const anchorHash = hash(convAnchor);
 	  try {
 	    const url = "/pull?id=" + encodeURIComponent(anchorHash);
 	    const response = await fetch(url);
 	    if (response.ok) {
-	      // Get the binary (gzip-compressed) data from the response.
-	      const compressedData = await response.arrayBuffer();
-	      // Asynchronously decompress the binary data into text.
-	      const newText = await uncompressGzipToText(compressedData);
+	      // Get the encrypted binary data from the response.
+	      const encryptedData = await response.arrayBuffer();
+
+	      // Import the AES key from h2.
+	      const aesKey = await importAesKey(h2);
+
+	      // Decrypt the encrypted data.
+	      const decryptedCompressedData = await decryptData(encryptedData, aesKey);
+
+	      // Decompress to retrieve the original text.
+	      const newText = await uncompressGzipToText(decryptedCompressedData);
 	      const prevText = txtArea.value;
 	      if (newText !== prevText) {
 	        txtArea.value = newText;
 	        saveContent();
 	      }
-	      // console.log("Pull successful");
+	      console.log("Pull successful");
 	    } else {
 	      console.error("Pull failed with status", response.status);
 	    }
@@ -441,16 +555,13 @@
 	    console.error("Pull error:", err);
 	  }
 	}
-	
-	pullButton.addEventListener("click", async function() {
-	  // this.classList.remove("active");
 
+	pullButton.addEventListener("click", async function() {
 	  if (pullButton.disabled) return;
 	  pullButton.disabled = true;
 	  await pullRemote();
 	  pullButton.disabled = false;
 	});
-
 
   /****************************
    * Conversation Anchor Code *
@@ -636,6 +747,7 @@ function newDoc() {
   /*********************
    * Line Number Logic *
    *********************/
+  /*
   function updateVisibleLineNumbers() {
     const lineHeight = 27; // Fixed line height (as defined in CSS).
     const scrollTop = txtArea.scrollTop;
@@ -655,6 +767,7 @@ function newDoc() {
 	}
     rowNumbers.style.transform = "translateY(-" + (Math.round(remainder * 1000) / 1000 + 27) + "px)";
   }
+  */
   
   //txtArea.addEventListener("scroll", updateVisibleLineNumbers);
   //window.addEventListener("resize", updateVisibleLineNumbers);
