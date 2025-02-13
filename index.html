@@ -306,6 +306,9 @@
 	  button.addEventListener("touchend", () => {
 	    button.classList.remove("active");
 	  });
+	  button.addEventListener("touchcancel", () => {
+	    button.classList.remove("active");
+	  });	  
 	}
 
 	// Apply the active listeners.
