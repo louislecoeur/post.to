@@ -270,6 +270,7 @@
 	  return x;
 	}
 
+	/*
 	function compress(x) {
 	  // Identity for now.
 	  return x;
@@ -279,6 +280,34 @@
 	  // Identity for now.
 	  return x;
 	}
+	*/
+
+	// Asynchronous function to compress text into a gzip binary.
+	async function compressTextToGzip(text) {
+	  const encoder = new TextEncoder();
+	  const inputData = encoder.encode(text);
+
+	  const cs = new CompressionStream("gzip");
+	  const writer = cs.writable.getWriter();
+	  writer.write(inputData);
+	  writer.close();
+
+	  const compressedResponse = new Response(cs.readable);
+	  const compressedData = await compressedResponse.arrayBuffer();
+	  return compressedData;
+	}
+
+	// Asynchronous function to decompress a gzip binary back to text.
+	async function uncompressGzipToText(gzipData) {
+	  const uint8Data = new Uint8Array(gzipData);
+	  const compressedStream = new Response(uint8Data).body;
+	  const ds = new DecompressionStream("gzip");
+	  const decompressedStream = compressedStream.pipeThrough(ds);
+	  const decompressedResponse = new Response(decompressedStream);
+	  const text = await decompressedResponse.text();
+	  return text;
+	}
+
 
 	function generateRandomAnchor(length) {
 	  const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -350,31 +379,30 @@
 
 	addButton.addEventListener("click", newDoc);
 
+
 	// Push button: post data when clicked.
 	pushButton.addEventListener("click", async function() {
-	  //this.classList.remove("active");
-
 	  // Prevent double clicks if already disabled.
 	  if (pushButton.disabled) return;
 	  pushButton.disabled = true;
 
 	  // Prepare payload.
 	  const text = txtArea.value;
-	  const compressedText = compress(text);
+	  // Await the asynchronous compression.
+	  const compressedText = await compressTextToGzip(text);
 	  const anchorHash = hash(convAnchor);
 
 	  try {
 	    // Build the URL with the id as a query parameter.
-	    // const url = "https://api.post.to/push?id=" + encodeURIComponent(anchorHash);
 	    const url = "/push?id=" + encodeURIComponent(anchorHash);
-	    // Send the POST with a plain text payload (only the data)
+	    // Send the POST with a binary payload.
 	    const response = await fetch(url, {
 	      method: "POST",
-	      headers: { "Content-Type": "text/plain; charset=utf-8" },
+	      headers: { "Content-Type": "application/octet-stream" },
 	      body: compressedText
 	    });
 	    if (response.ok) {
-	      //console.log("Push successful");
+	      // Push successful.
 	    } else {
 	      console.error("Push failed with status", response.status);
 	    }
@@ -386,23 +414,26 @@
 	  }
 	});
 
+
 	// Pull button: GET data when clicked.
 	async function pullRemote() {
-	  //this.classList.remove("active");
+	  // this.classList.remove("active");
 
 	  const anchorHash = hash(convAnchor);
 	  try {
 	    const url = "/pull?id=" + encodeURIComponent(anchorHash);
 	    const response = await fetch(url);
 	    if (response.ok) {
-	      const result = await response.text();
-	      let newText = decompress(result);
-	      let prevText = txtArea.value;
-	      if ( newText != prevText ) {
-			txtArea.value = newText;
-			saveContent();
-	  	  }
-	      //console.log("Pull successful");
+	      // Get the binary (gzip-compressed) data from the response.
+	      const compressedData = await response.arrayBuffer();
+	      // Asynchronously decompress the binary data into text.
+	      const newText = await uncompressGzipToText(compressedData);
+	      const prevText = txtArea.value;
+	      if (newText !== prevText) {
+	        txtArea.value = newText;
+	        saveContent();
+	      }
+	      // console.log("Pull successful");
 	    } else {
 	      console.error("Pull failed with status", response.status);
 	    }
@@ -410,9 +441,9 @@
 	    console.error("Pull error:", err);
 	  }
 	}
-
+	
 	pullButton.addEventListener("click", async function() {
-	  //this.classList.remove("active");
+	  // this.classList.remove("active");
 
 	  if (pullButton.disabled) return;
 	  pullButton.disabled = true;
@@ -449,7 +480,7 @@
 	    if (savedScroll !== null) {
 	      setTimeout(function() {
 	        txtArea.scrollTop = parseInt(savedScroll, 10);
-	        updateVisibleLineNumbers();
+	        //updateVisibleLineNumbers();
 	      }, 0);
 	    }
 	  } else {
