@@ -36,6 +36,7 @@ export default {
       return new Response(storedData, {
         status: 200,
         headers: { "Content-Type": "application/octet-stream",
+                   "Content-Encoding": "identity",
                    "Cache-Control": "no-transform" }
       });
     }
