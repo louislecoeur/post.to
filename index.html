@@ -1,18 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	
-  <!-- Fallback ICO first for browsers that don't support SVG -->
   <link rel="shortcut icon" href="icons/favicon.ico" />
-  <!-- PNG favicon -->
   <link rel="icon" type="image/png" href="icons/favicon-96x96.png" sizes="96x96" />
-  <!-- SVG favicon -->
   <link rel="icon" type="image/svg+xml" href="icons/favicon.svg" />
-  <!-- Apple touch icon -->
   <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
   <meta name="apple-mobile-web-app-title" content="post.to" />
   <link rel="manifest" href="icons/site.webmanifest" />
-
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>post.to</title>
@@ -94,8 +88,9 @@
 	#topButtons {
 	  position: absolute;
 	  top: 0px;
+	  /*top: 0px;right: 0px;*/
 	  left: 50%; 
-	  transform: translateX(-50%);  
+	  transform: translateX(-50%);
 	  padding: 15px; /* Padding adds space around the buttons */
 	  padding-bottom: 13px;
 	  padding-top: 13px;
@@ -106,7 +101,7 @@
 	  z-index: 1000; 
 	  pointer-events: none;
 	  justify-content: center; /* Centers buttons within the container */
-	  border-radius: 0 0 30px 30px;
+	  border-radius: 0px 0px 30px 30px;
 	  /* Removed fixed width: 140px */
 	}
 
@@ -190,25 +185,18 @@
 	  background-color: #1976D2;
 	}
 
-#leftIcon {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: 1000;
-}
-
-#leftIconButton {
-  width: 45px;
-  height: 45px;
-  border: none;
-  background: rgba(27, 27, 27, 0.85);
-  border-radius: 50%;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
+	#leftIconButton {
+	  width: 45px;
+	  height: 45px;
+	  border: none;
+	  /*background: rgba(27, 27, 27, 1);*/
+	  padding: 0;
+	  display: flex;
+	  align-items: center;
+	  justify-content: center;
+	  transform: translateX(3px) translateY(-3px);
+	  cursor: default;
+	}
 
   </style>
 </head>
@@ -217,14 +205,14 @@
 	<textarea id="txtArea" spellcheck="false" autofocus placeholder=""></textarea>
 	<div id="rowNumbers"></div>
 
-	<!-- source: https://logosandtypes.com/wp-content/uploads/2024/12/pieces-developers.svg -->
-	<div id="leftIcon">
-	  <button id="leftIconButton" aria-label="Home" title="Home">
-	    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 150 150"><path d="M77.54,10.27c-25.27-.05-46.73,19.18-49.36,44.14-.17,1.39-.27,2.74-.27,4.13v53.03c2.2,42.75,63.41,39.36,61.09-3.75,56.46-14.94,47.37-96.09-11.46-97.55Zm.22,87.18c-8.94-1.44-15.73-9.18-15.73-18.23v-10.84c.13-4.29,3.7-7.68,7.99-7.61,4.29,.08,7.74,3.56,7.74,7.85v28.82Zm11.27-1.52v-27.6c-1.37-24.96-36.86-24.9-38.22,0v11.38c.24,15.16,11.84,27.71,26.95,29.09v2.85c-.16,10.51-8.75,18.96-19.29,18.96-10.64,.05-19.33-8.63-19.31-19.29,.14-.91-.52-42.39,.22-55.88,1.62-19.32,18.48-34.22,38.14-34.2,43.98,.84,52.9,61.02,11.52,74.68Z" style="fill:#ffffff" ></svg>
-	  </button>
-	</div>
 
 	<div id="topButtons">
+
+		<!-- source: https://logosandtypes.com/wp-content/uploads/2024/12/pieces-developers.svg -->
+	  <div id="leftIconButton" aria-label="Home" title="Home">
+	    <svg xmlns="http://www.w3.org/2000/svg" width="45" height="45" viewBox="0 0 150 150"><path d="M77.54,10.27c-25.27-.05-46.73,19.18-49.36,44.14-.17,1.39-.27,2.74-.27,4.13v53.03c2.2,42.75,63.41,39.36,61.09-3.75,56.46-14.94,47.37-96.09-11.46-97.55Zm.22,87.18c-8.94-1.44-15.73-9.18-15.73-18.23v-10.84c.13-4.29,3.7-7.68,7.99-7.61,4.29,.08,7.74,3.56,7.74,7.85v28.82Zm11.27-1.52v-27.6c-1.37-24.96-36.86-24.9-38.22,0v11.38c.24,15.16,11.84,27.71,26.95,29.09v2.85c-.16,10.51-8.75,18.96-19.29,18.96-10.64,.05-19.33-8.63-19.31-19.29,.14-.91-.52-42.39,.22-55.88,1.62-19.32,18.48-34.22,38.14-34.2,43.98,.84,52.9,61.02,11.52,74.68Z" style="fill:#ffffff" ></svg>
+	  </div>
+
 
 	  <button id="addButton" aria-label="New" title="New">
 		  <svg width="16" height="16" viewBox="0 0 45.402 45.402" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
