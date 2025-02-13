@@ -455,22 +455,25 @@
 	
 	} else {
 		convAnchor = localStorage.getItem('conversationAnchor');
+		
 		if (!convAnchor) {
-		  convAnchor = generateRandomAnchor(20);
-		  contentKey = "content_" + convAnchor;
-		  localStorage.setItem('conversationAnchor', convAnchor);
-		  document.title = "post.to/#" + convAnchor;
+			convAnchor = generateRandomAnchor(20);
+			contentKey = "content_" + convAnchor;
+			localStorage.setItem('conversationAnchor', convAnchor);
+			document.title = "post.to/#" + convAnchor;
 
 		} else {
-			loadFromStorage();
+			contentKey = "content_" + convAnchor;
 			document.title = "post.to/#" + convAnchor;
-			if(history.pushState) {
-			    history.pushState(null, null, '#' + convAnchor);
-			}
-			else {
-			    location.hash = '#' + convAnchor;
-			}
+			loadFromStorage();
 		}
+
+		document.title = "post.to/#" + convAnchor;
+		if(history.pushState)
+		    history.pushState(null, null, '#' + convAnchor);
+		else
+		    location.hash = '#' + convAnchor;
+
 	}
 
   
@@ -533,13 +536,12 @@ function newDoc() {
 	setTimeout(function() {
 	txtArea.focus();
 	}, 0);	  	
-
+	
 	document.title = "post.to/#" + convAnchor;
-	if(history.pushState) {
-		history.pushState(null, null, '#' + convAnchor);
-	} else {
-		location.hash = '#' + convAnchor;
-	}
+	if(history.pushState)
+	    history.pushState(null, null, '#' + convAnchor);
+	else
+	    location.hash = '#' + convAnchor;
 }
 
 
@@ -557,16 +559,12 @@ function newDoc() {
 	} else {
 		// check if we have it in storage, and check remote too!
 
-		convAnchor = window.location.hash.substring(1);
 		contentKey = "content_" + convAnchor;
-		
 		document.title = "post.to/#" + convAnchor;
-		if(history.pushState) {
-			history.pushState(null, null, '#' + convAnchor);
-		} else {
-			location.hash = '#' + convAnchor;
-		}
-
+		if(history.pushState)
+		    history.pushState(null, null, '#' + convAnchor);
+		else
+		    location.hash = '#' + convAnchor;
 		let savedContent = localStorage.getItem(contentKey);		
 		if ( savedContent == null ) {
 			localStorage.setItem('conversationAnchor', convAnchor);
