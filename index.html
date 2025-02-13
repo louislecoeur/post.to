@@ -452,17 +452,38 @@
 	}
 
   
-  // Throttle helper: ensures a function is called at most once every delay ms.
-  function throttle(fn, delay) {
-    let lastCall = 0;
-    return function(...args) {
-      const now = Date.now();
-      if (now - lastCall >= delay) {
-        lastCall = now;
-        fn.apply(this, args);
+// Throttle with trailing invocation: 
+// It calls `fn` immediately if 10s have passed since the last call,
+// and if not, it schedules a trailing call that fires after the remaining time.
+function throttle(fn, delay) {
+  let timeout = null;
+  let lastCall = 0;
+  let lastArgs;
+
+  return function(...args) {
+    const now = Date.now();
+    const remaining = delay - (now - lastCall);
+    lastArgs = args;
+    
+    // If enough time has passed, call immediately.
+    if (remaining <= 0) {
+      if (timeout) {
+        clearTimeout(timeout);
+        timeout = null;
       }
-    };
+      lastCall = now;
+      fn.apply(this, args);
+    } 
+    // Otherwise, if no trailing call is scheduled, schedule one.
+    else if (!timeout) {
+      timeout = setTimeout(() => {
+        lastCall = Date.now();
+        timeout = null;
+        fn.apply(this, lastArgs);
+      }, remaining);
+    }
   }
+}
 
   function saveContent() {
     localStorage.setItem(contentKey, txtArea.value);
