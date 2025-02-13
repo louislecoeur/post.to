@@ -178,12 +178,37 @@
 	  background-color: #1976D2;
 	}
 
+#leftIcon {
+    position: absolute;
+    top: 13px;
+    left: 11px;
+    z-index: 1000;
+}
+#leftIconButton {
+    background: none;
+    border: none;
+    /*cursor: default;*/
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 
   </style>
 </head>
 <body>
 	<textarea id="txtArea" spellcheck="false" autofocus placeholder=""></textarea>
 	<div id="rowNumbers"></div>
+
+	<div id="leftIcon">
+	  <button id="leftIconButton" aria-label="Home" title="Home">
+	    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150">
+	      <path fill="#ffffff" d="M77.54,10.27c-25.27-.05-46.73,19.18-49.36,44.14-.17,1.39-.27,2.74-.27,4.13v53.03c2.2,42.75,63.41,39.36,61.09-3.75,56.46-14.94,47.37-96.09-11.46-97.55Zm.22,87.18c-8.94-1.44-15.73-9.18-15.73-18.23v-10.84c.13-4.29,3.7-7.68,7.99-7.61,4.29.08,7.74,3.56,7.74,7.85v28.82Zm11.27-1.52v-27.6c-1.37-24.96-36.86-24.9-38.22,0v11.38c.24,15.16,11.84,27.71,26.95,29.09v2.85c-.16,10.51-8.75,18.96-19.29,18.96-10.64.05-19.33-8.63-19.31-19.29.14-.91-.52-42.39,.22-55.88,1.62-19.32,18.48-34.22,38.14-34.2,43.98.84,52.9,61.02,11.52,74.68Z"/>
+	    </svg>
+	  </button>
+	</div>
 
 	<div id="topButtons">
 
