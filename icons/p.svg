@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 150 150"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="p.svg"
+   inkscape:version="1.3.2 (091e20e, 2023-11-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#1b1b1b"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="0.78666665"
+     inkscape:cx="-62.288137"
+     inkscape:cy="336.22882"
+     inkscape:window-width="1392"
+     inkscape:window-height="1212"
+     inkscape:window-x="2555"
+     inkscape:window-y="366"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg1" />
+  <defs
+     id="defs1">
+    <color-profile
+       name="ACES-CG-Linear-Academy-Color-Encoding-System-AP1"
+       xlink:href="file:///System/Library/ColorSync/Profiles/ACESCG%20Linear.icc"
+       id="color-profile2" />
+  </defs>
+  <path
+     d="m 75.132955,21.004146 c -20.724421,-0.04101 -38.324187,15.729893 -40.481101,36.200077 -0.13942,1.139966 -0.221432,2.247127 -0.221432,3.387093 v 43.490944 c 1.804263,35.06011 52.00378,32.2799 50.101103,-3.07545 46.303945,-12.252592 38.849065,-78.80529 -9.39857,-80.002664 z m 0.180426,71.498022 c -7.331869,-1.18097 -12.90048,-7.528697 -12.90048,-14.950779 v -8.890096 c 0.106615,-3.518313 3.034442,-6.298518 6.552755,-6.24111 3.518313,0.06561 6.347725,2.919626 6.347725,6.437939 v 23.635846 z m 9.242748,-1.24658 V 68.620287 c -1.123564,-20.470184 -30.229607,-20.420977 -31.34497,0 v 9.33296 c 0.196829,12.433011 9.710216,22.725513 22.102222,23.857283 v 2.33734 c -0.131219,8.61945 -7.176046,15.54946 -15.820106,15.54946 -8.726072,0.041 -15.852911,-7.07763 -15.836508,-15.8201 0.114816,-0.74631 -0.426463,-34.764871 0.180426,-45.828284 1.328594,-15.84471 15.155809,-28.064491 31.27936,-28.048089 36.068857,0.688901 43.384327,50.043695 9.447777,61.246531 z"
+     style="fill:#ffffff;stroke-width:0.999996"
+     id="path1" />
+</svg>
+<!-- source: https://logosandtypes.com/wp-content/uploads/2024/12/pieces-developers.svg -->
+
