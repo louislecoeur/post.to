@@ -320,6 +320,8 @@
 
 	copyButton.addEventListener("click", function() {
     // Use the Clipboard API to copy the current URL
+		this.classList.remove("active");
+
 	    navigator.clipboard.writeText(txtArea.value)
 	      .then(() => {
 	        // alert("Textarea copied to clipboard!");
@@ -331,6 +333,8 @@
 
 	linkButton.addEventListener("click", function() {
     // Use the Clipboard API to copy the current URL
+		this.classList.remove("active");
+
 	    navigator.clipboard.writeText(window.location.href)
 	      .then(() => {
 	        // alert("URL copied to clipboard!");
@@ -344,6 +348,8 @@
 
 	// Push button: post data when clicked.
 	pushButton.addEventListener("click", async function() {
+	  this.classList.remove("active");
+
 	  // Prevent double clicks if already disabled.
 	  if (pushButton.disabled) return;
 	  pushButton.disabled = true;
@@ -378,6 +384,8 @@
 
 	// Pull button: GET data when clicked.
 	async function pullRemote() {
+	  this.classList.remove("active");
+
 	  const anchorHash = hash(convAnchor);
 	  try {
 	    const url = "/pull?id=" + encodeURIComponent(anchorHash);
@@ -400,6 +408,8 @@
 	}
 
 	pullButton.addEventListener("click", async function() {
+	  this.classList.remove("active");
+
 	  if (pullButton.disabled) return;
 	  pullButton.disabled = true;
 	  await pullRemote();
@@ -536,6 +546,8 @@ function throttle(fn, delay) {
    *****************************************/
 
 function newDoc() {
+	addButton.classList.remove("active");
+
 	convAnchor = generateRandomAnchor(20);
 	contentKey = "content_" + convAnchor;
 	localStorage.setItem('conversationAnchor', convAnchor);
