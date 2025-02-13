@@ -15,7 +15,7 @@ export default {
         // Process the data (here it's simply passed through; you might compress or modify it)
         const processedData = data; 
         // Save to KV under a key using the id.
-        await env.url_kv.put("content_" + id, processedData);
+        await env.url_kv.put("k_" + id, processedData);
         return new Response("OK", { status: 200 });
       } catch (e) {
         return new Response("Error: " + e.toString(), { status: 500 });
@@ -29,7 +29,7 @@ export default {
         return new Response("Missing id", { status: 400 });
       }
       // Retrieve the binary data from KV.
-      const storedData = await env.url_kv.get("content_" + id, "arrayBuffer");
+      const storedData = await env.url_kv.get("k_" + id, "arrayBuffer");
       if (storedData === null) {
         return new Response("Not found", { status: 404 });
       }
