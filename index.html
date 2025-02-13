@@ -206,12 +206,12 @@
 	  </button>
 
 
-	  <button id="pushButton" aria-label="Push" title="Push">
+	  <button id="pushButton" aria-label="Save to cloud" title="Save to cloud">
 	    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
 	      <path fill-rule="evenodd" clip-rule="evenodd" d="M15.1918 8.90615C15.6381 8.45983 16.3618 8.45983 16.8081 8.90615L21.9509 14.049C22.3972 14.4953 22.3972 15.2189 21.9509 15.6652C21.5046 16.1116 20.781 16.1116 20.3347 15.6652L17.1428 12.4734V22.2857C17.1428 22.9169 16.6311 23.4286 15.9999 23.4286C15.3688 23.4286 14.8571 22.9169 14.8571 22.2857V12.4734L11.6652 15.6652C11.2189 16.1116 10.4953 16.1116 10.049 15.6652C9.60265 15.2189 9.60265 14.4953 10.049 14.049L15.1918 8.90615Z" fill="currentColor"></path>
 	    </svg>
 	  </button>
-	  <button id="pullButton" aria-label="Pull" title="Pull">
+	  <button id="pullButton" aria-label="Load from cloud" title="Load from cloud">
 	    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="transform: rotate(180deg);">
 	      <path fill-rule="evenodd" clip-rule="evenodd" d="M15.1918 8.90615C15.6381 8.45983 16.3618 8.45983 16.8081 8.90615L21.9509 14.049C22.3972 14.4953 22.3972 15.2189 21.9509 15.6652C21.5046 16.1116 20.781 16.1116 20.3347 15.6652L17.1428 12.4734V22.2857C17.1428 22.9169 16.6311 23.4286 15.9999 23.4286C15.3688 23.4286 14.8571 22.9169 14.8571 22.2857V12.4734L11.6652 15.6652C11.2189 16.1116 10.4953 16.1116 10.049 15.6652C9.60265 15.2189 9.60265 14.4953 10.049 14.049L15.1918 8.90615Z" fill="currentColor"></path>
 	    </svg>
@@ -226,7 +226,7 @@
 		  </svg>	  
 	  </button>
 	  
-		<button id="copyButton" aria-label="Copy" title="Copy">
+		<button id="copyButton" aria-label="Copy all" title="Copy all">
 		  <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 267.17969 270.98047" fill="currentColor">
 		    <path d="M 112.08984,0 C 91.590841,0 75,17.076639 75,37.791015 v 9.09961 c 8.4e-4,4.159501 3.430342,7.589004 7.589844,7.589843 h 14.699219 c 4.159507,-8.39e-4 7.589007,-3.430342 7.589847,-7.589843 v -9.09961 c 0,-4.222983 3.37425,-7.511719 7.21093,-7.511719 h 118 c 4.01999,0 7.21094,3.197408 7.21094,7.511719 V 158.68945 c 0,4.48868 -3.098,7.51172 -7.21094,7.51172 h -8.80078 c -4.15951,8.3e-4 -7.58901,3.43033 -7.58985,7.58984 v 15.09961 c 8.4e-4,4.15951 3.43034,7.58901 7.58985,7.58984 h 8.80078 c 20.499,0 37.08984,-17.07664 37.08984,-37.79101 V 37.791015 C 267.17968,17.076639 250.58884,0 230.08984,0 Z M 37.089844,74.40039 C 16.563064,74.40039 0,91.578505 0,112.29101 v 120.89844 c 0,20.71437 16.590841,37.79101 37.089844,37.79101 H 155.08984 c 20.499,0 37.08984,-17.07664 37.08984,-37.79101 v -121 c 0,-20.714412 -16.59138,-37.78906 -37.08984,-37.78906 z m 0,30.37891 H 155.08984 c 4.01999,0 7.21094,3.19741 7.21094,7.51171 v 120.89844 c 0,4.22298 -3.37425,7.51172 -7.21094,7.51172 H 37.089844 c -4.019989,0 -7.210938,-3.19741 -7.210938,-7.51172 V 112.29101 c 0,-4.22298 3.374253,-7.51171 7.210938,-7.51171 z" />
 		  </svg>
@@ -238,7 +238,7 @@
 		  </svg>
 		</button>	
 
-	  
+
 	</div>
 
   <script>
@@ -355,7 +355,7 @@
 	      body: compressedText
 	    });
 	    if (response.ok) {
-	      console.log("Push successful");
+	      //console.log("Push successful");
 	    } else {
 	      console.error("Push failed with status", response.status);
 	    }
@@ -381,7 +381,7 @@
 			txtArea.value = newText;
 			saveContent();
 	  	  }
-	      console.log("Pull successful");
+	      //console.log("Pull successful");
 	    } else {
 	      console.error("Pull failed with status", response.status);
 	    }
