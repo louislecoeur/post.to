@@ -2,12 +2,17 @@
 <html lang="en">
 <head>
 	
-	<link rel="icon" type="image/png" href="/icons/favicon-96x96.png" sizes="96x96" />
-	<link rel="icon" type="image/svg+xml" href="/icons/favicon.svg" />
-	<link rel="shortcut icon" href="/icons/favicon.ico" />
-	<link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
-	<meta name="apple-mobile-web-app-title" content="post.to" />
-	<link rel="manifest" href="/icons/site.webmanifest" />
+  <!-- Fallback ICO first for browsers that don't support SVG -->
+  <link rel="shortcut icon" href="/icons/favicon.ico" />
+  <!-- PNG favicon -->
+  <link rel="icon" type="image/png" href="/icons/favicon-96x96.png" sizes="96x96" />
+  <!-- SVG favicon -->
+  <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg" />
+  <!-- Apple touch icon -->
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-title" content="post.to" />
+  <link rel="manifest" href="/icons/site.webmanifest" />
+
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>post.to</title>
@@ -187,24 +192,27 @@
 
 #leftIcon {
     position: absolute;
-    top: 15px;
-    left: 13px;
+    top: 10px;
+    left: 10px;
     z-index: 1000;
 }
+
 #leftIconButton {
-    background: none;
-    border: none;
-    /*cursor: default;*/
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  width: 45px;
+  height: 45px;
+  border: none;
+  background: rgba(27, 27, 27, 0.85);
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 
   </style>
 </head>
+
 <body>
 	<textarea id="txtArea" spellcheck="false" autofocus placeholder=""></textarea>
 	<div id="rowNumbers"></div>
