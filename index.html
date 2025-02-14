@@ -697,8 +697,9 @@
 	async function loadFromStorage(savedCaret) {
 	    txtArea.value = await loadFile(anchor);
 	    setTimeout(function() {
-	        //txtArea.setSelectionRange(parseInt(caretPosition, 10), parseInt(caretPosition, 10));
-	        textarea.selectionEnd = textarea.selectionStart = parseInt(savedCaret, 10);
+	    	let caretPosInt = parseInt(caretPosition, 10);
+	        txtArea.setSelectionRange(caretPosInt, caretPosInt);
+	        //txtArea.selectionEnd = txtArea.selectionStart = parseInt(savedCaret, 10);
 	        txtArea.blur();
 	        txtArea.focus();
 	    }, 1);
