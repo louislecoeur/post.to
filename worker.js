@@ -11,6 +11,9 @@ export default {
       if (!id) {
         return new Response("Missing id", { status: 400 });
       }
+      if (!etag) {
+        return new Response("Missing etag", { status: 400 });
+      }
       try {
         // Read the POST body as binary data.
         const data = await request.arrayBuffer();
@@ -39,7 +42,8 @@ export default {
       }
 
       // Get the stored etag from metadata.
-      const storedEtag = result.metadata && result.metadata.etag;
+      const storedEtag = (result.metadata && result.metadata.etag);
+
       // Retrieve the client's If-None-Match header.
       const ifNoneMatch = request.headers.get("if-none-match");
 
@@ -56,7 +60,7 @@ export default {
       };
 
       if (storedEtag) {
-        responseHeaders["ETag"] = storedEtag;
+        responseHeaders["ETag"] = '"' + storedEtag + '"';
       }
 
       return new Response(result.value, {
