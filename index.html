@@ -933,8 +933,9 @@
 		} else {
 			history.replaceState(null, null, '#' + newAnchor);			
 		}
-		document.title = "post.to/#" + newAnchor;   
-
+		
+		document.title = "post.to/#" + newAnchor; 
+		anchor = newAnchor;
 		wasEdited = false;	// no because saveContent has async? mmm not anymore!!! (remove if async again)
 	}
 
