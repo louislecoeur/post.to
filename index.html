@@ -687,8 +687,7 @@
 	    const { key, content } = event.data;
 	    try {
 	      const root = await navigator.storage.getDirectory();
-	      // Use the key directly (you might want to sanitize or encode it)
-	      const safeKey = key;
+	      const safeKey = btoa(unescape(encodeURIComponent(key))).replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=+$/, '');
 	      const fileHandle = await root.getFileHandle(safeKey, { create: true });
 	      
 	      let writable;
