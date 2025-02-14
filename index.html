@@ -795,7 +795,7 @@
   }
 
   txtArea.addEventListener("input", editedHandler);
-  window.addEventListener("beforeunload", saveContent);
+  window.addEventListener("pagehide", saveContent);
 
   /*****************************************
    * Update on Anchor (hashchange) Events  *
