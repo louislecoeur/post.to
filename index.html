@@ -918,16 +918,24 @@
    *****************************************/
 
 	function newDoc() {
-		if ( anchor )
+		if ( anchor ) {
 			saveContent();
-		anchor = generateRandomAnchor(30);
+		}
+
+		let newAnchor = generateRandomAnchor(30);
 		txtArea.value = "";
 		setTimeout(function() {
 			txtArea.focus();
 		}, 0);
-		history.pushState(null, null, '#' + anchor);
-		document.title = "post.to/#" + anchor;   
-		//wasEdited = false;	
+
+		if ( anchor ) {
+			history.pushState(null, null, '#' + newAnchor);
+		} else {
+			history.replaceState(null, null, '#' + newAnchor);			
+		}
+		document.title = "post.to/#" + newAnchor;   
+
+		wasEdited = false;	// no because saveContent has async? mmm not anymore!!! (remove if async again)
 	}
 
 
