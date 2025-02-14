@@ -620,6 +620,7 @@
 	    return navigator.storage.getDirectory();
 	  }
 
+	  /*
 	  // Non-blocking write
 	  setItem(key, text) {
 		  (async () => {
@@ -644,6 +645,7 @@
 		    }
 		  })();
 	  }
+	  */
 
 	  // Blocking read
 	  async getItem(key) {
@@ -685,22 +687,42 @@
 	const workerCode = `
 	  self.addEventListener("message", async (event) => {
 	    const { key, content } = event.data;
+	    console.log("event data", event.data);
+	    console.log("key", key);
+	    console.log("content", content);
 	    try {
 	      const root = await navigator.storage.getDirectory();
-	      const safeKey = btoa(unescape(encodeURIComponent(key))).replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=+$/, '');
+	      const safeKey = btoa(unescape(encodeURIComponent(key)))
+	        .replace(/\\+/g, '-')
+	        .replace(/\\//g, '_')
+	        .replace(/=+$/, '');
 	      const fileHandle = await root.getFileHandle(safeKey, { create: true });
 	      
-	      let writable;
 	      if (typeof fileHandle.createWritable === "function") {
-	        writable = await fileHandle.createWritable();
+	        // Chrome (and other browsers supporting the async API)
+	        const writable = await fileHandle.createWritable();
+	        await writable.write(content);
+	        await writable.close();
 	      } else if (typeof fileHandle.getWritable === "function") {
-	        writable = await fileHandle.getWritable();
+	        // Fallback async method if available
+	        const writable = await fileHandle.getWritable();
+	        await writable.write(content);
+	        await writable.close();
+	      } else if (typeof fileHandle.createSyncAccessHandle === "function") {
+	        // Safari: use the synchronous API available in Worker threads
+	        const accessHandle = await fileHandle.createSyncAccessHandle();
+	        const encoder = new TextEncoder();
+	        const data = encoder.encode(content);
+	        // Write starting at offset 0, overwriting any previous content.
+	        accessHandle.write(data, { at: 0 });
+	        // Adjust the file size to match the new content length.
+	        accessHandle.truncate(data.byteLength);
+	        // Persist changes.
+	        accessHandle.flush();
+	        accessHandle.close();
 	      } else {
 	        throw new Error("No writable method available on fileHandle.");
 	      }
-	      
-	      await writable.write(content);
-	      await writable.close();
 	      
 	      // Signal success back to the main thread.
 	      self.postMessage({ key, success: true });
@@ -709,7 +731,6 @@
 	    }
 	  });
 	`;
-
 
 	const blob = new Blob([workerCode], { type: "application/javascript" });
 	const workerURL = URL.createObjectURL(blob);
@@ -729,14 +750,16 @@
 
 	// This function iterates over localStorage keys that start with "text."
 	// and sends them to the worker.
-	async function moveToOPFS() {
+	async function moveToOPFS( anchorKey ) {
 	  const unsavedKeys = [];
 	  
 	  // Iterate over all localStorage keys and filter those starting with "text."
 	  for (let i = 0; i < localStorage.length; i++) {
-	    const key = localStorage.key(i);
-	    if (key.startsWith("text.")) {
-	      unsavedKeys.push(key);
+	    key = localStorage.key(i);
+	    if ( key.startsWith("text.") ) {
+	      if (key == anchorKey)
+	    	continue;  // treated separately
+	      unsavedKeys.push(key);	      
 	    }
 	  }
 
@@ -751,7 +774,6 @@
 
 
 
-
   /****************************
    * Conversation Anchor Code *
    ****************************/
@@ -759,15 +781,16 @@
 	async function loadFromStorage(savedCaret) {
 		let savedText = localStorage.getItem("text." + anchor);
 		if ( savedText !== null ) {
-			localStorage.removeItem("text." + anchor); // delete the localStorage record
-			opfsStorage.setItem(anchor, savedText);  // so we have it in memory next time, not blocking
+			// call the "mover" from localStorage to opfs
+			savedKey = "text." + anchor;
+			worker.postMessage({ key: savedKey, content: savedText });
+			moveToOPFS("text." + anchor);
+			//localStorage.removeItem("text." + anchor); // delete the localStorage record
+			//opfsStorage.setItem(anchor, savedText);  // so we have it in memory next time, not blocking
 		} else {
 			savedText = await opfsStorage.getItem(anchor);
+			moveToOPFS();  // in case we have other unsaved keys...
 		}
-
-		// call the "mover" from localStorage to opfs
-		moveToOPFS();
-
 
 		txtArea.value = savedText;
 	    setTimeout(function() {
@@ -933,7 +956,7 @@
 		} else {
 			history.replaceState(null, null, '#' + newAnchor);			
 		}
-		
+
 		document.title = "post.to/#" + newAnchor; 
 		anchor = newAnchor;
 		wasEdited = false;	// no because saveContent has async? mmm not anymore!!! (remove if async again)
