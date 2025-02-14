@@ -328,6 +328,18 @@
 	  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); // removes the last "=="
 	}
 
+	async function computeSHA1Base64(text) {
+	  // 1. Create a TextEncoder and encode the input text.
+	  const encoder = new TextEncoder();
+	  const data = encoder.encode(text);
+	  
+	  // 2. Compute the SHA‑1 digest of the encoded data.
+	  const hashBuffer = await crypto.subtle.digest("SHA-1", data);
+	  
+	  // 3. Convert the resulting ArrayBuffer to a base64‑encoded string.
+	  return bufferToBase64Url(hashBuffer);
+	}	
+
 	// Helper: Compute anchorHash (h1 cropped & Base64-encoded with no trailing "=")
 	// and h2 from a seed.
 	async function computeHashes(seed) {
@@ -463,7 +475,6 @@
 
 	// -------------------- PUSH --------------------
 
-	// Push button: post data when clicked.
 	pushButton.addEventListener("click", async function() {
 	  if (pushButton.disabled) return;
 	  pushButton.disabled = true;
@@ -476,9 +487,18 @@
 	    if (!computedHashes[seed]) {
 	      computedHashes[seed] = await computeHashes(seed);
 	    }
-
 	    const { anchorHash, h2 } = computedHashes[seed];
+
+	    // Get text from the text area.
 	    const text = txtArea.value;
+	    // Append a salt to the text before hashing.
+	    const saltedText = text + "salt";
+
+	    // Compute the SHA-1 hash (base64 encoded) of the salted text.
+	    const textHashBase64 = await computeSHA1Base64(saltedText);
+	    //console.log("SHA-1 (base64) of salted text:", textHashBase64);
+	    
+	    // Compress the original text.
 	    const compressedData = await compressTextToGzip(text);
 
 	    // Derive an AES key from h2.
@@ -487,8 +507,9 @@
 	    // Encrypt the compressed data.
 	    const encryptedData = await encryptData(compressedData, aesKey);
 
-	    // Build the URL with the record ID.
-	    const url = "/push?id=" + encodeURIComponent(anchorHash);
+	    // Build the URL with the record ID and computed text hash.
+	    const url = "/push?id=" + encodeURIComponent(anchorHash) +
+	                "&etag=" + encodeURIComponent(textHashBase64);
 
 	    // Send the POST with the encrypted binary payload.
 	    const response = await fetch(url, {
@@ -501,8 +522,8 @@
 	    });
 
 	    if (response.ok) {
-	       removeEdited(anchor);  // we have the last version since we overwrote the server's copy
-	      //console.log("Push successful");
+	      removeEdited(anchor);  // We have the last version since we overwrote the server's copy.
+	      // console.log("Push successful");
 	    } else {
 	      console.error("Push failed with status", response.status);
 	    }
