@@ -765,10 +765,11 @@
 		}
 	}
 
-	function saveContent() {
+	async function saveContent() {
 		if ( wasEdited ) {
 	    	localStorage.setItem(anchor, txtArea.selectionStart);
-	    	wasEdited.write(txtArea.value);
+	    	await wasEdited.write(txtArea.value);
+	    	await wasEdited.close();
 	    	//saveFile(anchor, txtArea.value);
 		}
 		wasEdited = false;
