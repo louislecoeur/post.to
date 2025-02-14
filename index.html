@@ -671,34 +671,6 @@
 	    }
 	  }
 
-	  // Existing method: open (or create) a file and return its file handle.
-	  async openFile(key) {
-	    const root = await this.#getRoot();
-	    const safeKey = encodeKey(key);
-	    return await root.getFileHandle(safeKey, { create: true });
-	  }
-
-	  // NEW METHOD: Open a persistent writable for a given key.
-	  async openWritable(key) {
-	    const fileHandle = await this.openFile(key);
-	    let writable;
-	    if (typeof fileHandle.createWritable === "function") {
-	      writable = await fileHandle.createWritable();
-	    } else if (typeof fileHandle.getWritable === "function") {
-	      writable = await fileHandle.getWritable();
-	    } else {
-	      throw new Error("No writable method available on fileHandle.");
-	    }
-	    return writable;
-	  }
-
-	  // NEW METHOD: Write text to an already opened writable.
-	  // This does not close the writable so that you can perform additional writes.
-	  async writeToWritable(writable, text) {
-	    await writable.write(text);
-	    writable.close()
-	    // Optionally, you could call writable.close() when you're completely done.
-	  }
 
 	}
 
@@ -738,7 +710,14 @@
    ****************************/
 
 	async function loadFromStorage(savedCaret) {
-	    txtArea.value = await loadFile(anchor);
+		let savedText = localStorage.getItem("unsaved." + anchor);
+		if ( savedText != null ) {
+			localStorage.removeItem("unsaved." + anchor); // delete the localStorage record
+			opfsStorage.setItem(key, savedText);  // so we have it in memory next time, not blocking
+		} else {
+			savedText = await loadFile(anchor);
+		}
+		txtArea.value = savedText;
 	    setTimeout(function() {
 	    	let caretPosInt = parseInt(savedCaret, 10);
 	        txtArea.setSelectionRange(caretPosInt, caretPosInt);
@@ -754,7 +733,7 @@
 		if ( window.location.hash ) {
 			anchor = window.location.hash.substring(1);
 			document.title = "post.to/#" + anchor;
-			let savedCaret = localStorage.getItem(anchor);
+			let savedCaret = localStorage.getItem("caret." + anchor);
 			if ( savedCaret === null ) {
 			  	pullRemote();
 			} else {
@@ -765,21 +744,36 @@
 		}
 	}
 
-	async function saveContent() {
+
+	/*
+	async function saveContentAsync() {
 		if ( wasEdited ) {
 			let fileHandle = wasEdited;
 			wasEdited = false;
-	    	localStorage.setItem(anchor, txtArea.selectionStart);
+			if ( anchor )
+	    		localStorage.setItem("caret." + anchor, txtArea.selectionStart);
 	    	await fileHandle.write(txtArea.value);
-	    	await fileHandle.close();
+	    	fileHandle.close();
+		}
+	}
+	*/
+
+	function saveContent() {
+		if ( wasEdited ) {
+			wasEdited = false;
+			if ( anchor ) {
+	    		localStorage.setItem("caret." + anchor, txtArea.selectionStart);
+	    		localStorage.setItem("text." + anchor, txtArea.value);
+			}
 		}
 	}
 
-   window.addEventListener("beforeunload", saveContent);
-   window.addEventListener("pagehide", saveContent);
+   document.addEventListener("beforeunload", saveContent);
+   /*window.addEventListener("pagehide", saveContent);
    document.addEventListener("visibilitychange", saveContent);
    window.addEventListener("unload", saveContent);
    txtArea.addEventListener("blur", saveContent);
+	*/
 
 	function hashChangeHandler() {
 	// Save current content, caret, and scroll for the old anchor.
@@ -842,14 +836,16 @@
   	// Asynchronously open the file (using your OPFS openFile method) and store the file handle
   	// Remove the event listener so this only happens once
   	txtArea.removeEventListener("input", editedHandler);
-  	wasEdited = await opfsStorage.openWritable(anchor);
+  	wasEdited = true;
   }
 
   function removeEdited(anchor) {
-     wasEdited = false;
-     if ( localStorage.getItem(anchor) !== null ) {
+  	 if ( wasEdited )
+     	wasEdited = false;
+
+     if ( localStorage.getItem("caret." + anchor) !== null ) {
      	opfsStorage.removeItem(anchor);  // should be a file if there is a localStorage key
-     	localStorage.removeItem(anchor);  // no error if undefined
+     	localStorage.removeItem("caret." + anchor);  // no error if undefined
      }
      txtArea.addEventListener("input", editedHandler);
   }
@@ -868,6 +864,8 @@
    *****************************************/
 
 	function newDoc() {
+		if ( anchor )
+			saveContent();
 		anchor = generateRandomAnchor(30);
 		txtArea.value = "";
 		setTimeout(function() {
@@ -875,7 +873,7 @@
 		}, 0);
 		document.title = "post.to/#" + anchor;   
 		history.pushState(null, null, '#' + anchor);
-		wasEdited = false;	
+		//wasEdited = false;	
 	}
 
 
