@@ -7,7 +7,7 @@ export default {
     if (pathname === "/push" && request.method === "POST") {
       const id = url.searchParams.get("id");
       // Get the etag from the URL (sent from the client)
-      const etag = url.searchParams.get("etag");
+      const etag = url.searchParams.get("h");
       if (!id) {
         return new Response("Missing id", { status: 400 });
       }
