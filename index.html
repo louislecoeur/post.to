@@ -811,12 +811,14 @@
 			let savedCaret = localStorage.getItem("caret." + anchor);
 			if ( savedCaret === null ) {
 			  	pullRemote();
+			  	moveToOPFS();
 			} else {
-			 	loadFromStorage(savedCaret);
+			 	loadFromStorage(savedCaret);  // moveToOPFS() called inside...
 			}
 		
 		} else {		
 			newDoc();
+			moveToOPFS()
 		}
 	}
 
