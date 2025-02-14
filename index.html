@@ -621,11 +621,7 @@
 	  }
 
 	  // Non-blocking write
-	  //setItem(key, arrayBuffer) {
 	  setItem(key, text) {
-	  	// CHANGE CODE FOR TEXT STRING ONLY
-	  	// ...
-
 		  (async () => {
 		    try {
 		      const root = await this.#getRoot();
@@ -647,31 +643,10 @@
 		      console.error('OPFS write error:', error);
 		    }
 		  })();
-
-
-	  	/*
-	    (async () => {
-	      try {
-	        const root = await this.#getRoot();
-	        const safeKey = encodeKey(key);
-	        const fileHandle = await root.getFileHandle(safeKey, { create: true });
-	        const writable = await fileHandle.createWritable();
-	        await writable.write(arrayBuffer);
-	        await writable.close();
-	      } catch (error) {
-	        console.error('OPFS write error:', error);
-	      }
-	    })();
-	    */
-
 	  }
 
 	  // Blocking read
 	  async getItem(key) {
-	    
-	  	// CHANGE CODE FOR TEXT STRING ONLY
-	  	// ...
-
 	    try {
 	      const root = await this.#getRoot();
 	      const safeKey = encodeKey(key);
@@ -683,20 +658,6 @@
 	      if (error.name === 'NotFoundError') return null;
 	      throw error;
 	    }
-
-	    /*
-	    try {
-	      const root = await this.#getRoot();
-	      const safeKey = encodeKey(key);
-	      const fileHandle = await root.getFileHandle(safeKey);
-	      const file = await fileHandle.getFile();
-	      return await file.arrayBuffer();
-	    } catch (error) {
-	      if (error.name === 'NotFoundError') return null;
-	      throw error;
-	    }
-		*/
-
 	  }
 
 	  // removeItem if needed
@@ -709,6 +670,36 @@
 	      if (error.name !== 'NotFoundError') throw error;
 	    }
 	  }
+
+	  // Existing method: open (or create) a file and return its file handle.
+	  async openFile(key) {
+	    const root = await this.#getRoot();
+	    const safeKey = encodeKey(key);
+	    return await root.getFileHandle(safeKey, { create: true });
+	  }
+
+	  // NEW METHOD: Open a persistent writable for a given key.
+	  async openWritable(key) {
+	    const fileHandle = await this.openFile(key);
+	    let writable;
+	    if (typeof fileHandle.createWritable === "function") {
+	      writable = await fileHandle.createWritable();
+	    } else if (typeof fileHandle.getWritable === "function") {
+	      writable = await fileHandle.getWritable();
+	    } else {
+	      throw new Error("No writable method available on fileHandle.");
+	    }
+	    return writable;
+	  }
+
+	  // NEW METHOD: Write text to an already opened writable.
+	  // This does not close the writable so that you can perform additional writes.
+	  async writeToWritable(writable, text) {
+	    await writable.write(text);
+	    writable.close()
+	    // Optionally, you could call writable.close() when you're completely done.
+	  }
+
 	}
 
 	// Create a singleton instance
@@ -774,12 +765,14 @@
 		}
 	}
 
-  function saveContent() {
-  	if ( wasEdited ) {
-	    localStorage.setItem(anchor, txtArea.selectionStart);
-	    saveFile(anchor, txtArea.value);
+	function saveContent() {
+		if ( wasEdited ) {
+	    	localStorage.setItem(anchor, txtArea.selectionStart);
+	    	wasEdited.write(txtArea.value);
+	    	//saveFile(anchor, txtArea.value);
+		}
+		wasEdited = false;
 	}
-  }
 
 	function hashChangeHandler() {
 	// Save current content, caret, and scroll for the old anchor.
@@ -832,9 +825,17 @@
   // const throttledSaveContent = throttle(saveContent, 10000);
   // txtArea.addEventListener("input", throttledSaveContent);
   
+  /*
   function editedHandler() {
      wasEdited = true;
      txtArea.removeEventListener("input", editedHandler);
+  }
+*/
+  async function editedHandler() {
+  	// Asynchronously open the file (using your OPFS openFile method) and store the file handle
+  	// Remove the event listener so this only happens once
+  	txtArea.removeEventListener("input", editedHandler);
+  	wasEdited = await opfsStorage.openWritable(anchor);
   }
 
   function removeEdited(anchor) {
@@ -855,7 +856,7 @@
   });
   */
 
-	window.addEventListener("beforeunload", saveContent);
+   window.addEventListener("beforeunload", saveContent);
 
   /*****************************************
    * Update on Anchor (hashchange) Events  *
