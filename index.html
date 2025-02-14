@@ -775,6 +775,11 @@
 		wasEdited = false;
 	}
 
+   window.addEventListener("beforeunload", saveContent);
+   window.addEventListener("pagehide", saveContent);
+   document.addEventListener("visibilitychange", saveContent);
+   window.addEventListener("unload", saveContent);
+
 	function hashChangeHandler() {
 	// Save current content, caret, and scroll for the old anchor.
 		saveContent();  // check if content was edited before saving
@@ -856,8 +861,6 @@
 			saveContent();
   });
   */
-
-   window.addEventListener("beforeunload", saveContent);
 
   /*****************************************
    * Update on Anchor (hashchange) Events  *
