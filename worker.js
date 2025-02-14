@@ -12,7 +12,7 @@ export default {
         return new Response("Missing id", { status: 400 });
       }
       if (!etag) {
-        return new Response("Missing etag", { status: 400 });
+        return new Response("Missing hash", { status: 400 });
       }
       try {
         // Read the POST body as binary data.
@@ -29,46 +29,51 @@ export default {
       }
     }
 
+
     // Handle GET /pull?id=xxx
-    else if (pathname === "/pull" && request.method === "GET") {
+    if (pathname === "/pull" && request.method === "GET") {
       const id = url.searchParams.get("id");
       if (!id) {
         return new Response("Missing id", { status: 400 });
       }
-      // Retrieve the binary data along with its metadata from KV.
-      const { result, metadata } = await env.url_kv.getWithMetadata("k_" + id, "arrayBuffer");
-      if (result === null) {
-        return new Response("Not found", { status: 404 });
+      
+      try {
+        // Retrieve the binary data and its metadata from KV.
+        const { value, metadata } = await env.url_kv.getWithMetadata("k_" + id, { type: "arrayBuffer" });
+        
+        if (value === null) {
+          return new Response("Not found", { status: 404 });
+        }
+        
+        // Extract the stored etag from metadata.
+        const storedEtag = metadata && metadata.etag;
+        // Get the client's If-None-Match header.
+        const clientEtag = request.headers.get("if-none-match");
+        
+        // If the etags match, return a 304 Not Modified.
+        if (storedEtag && clientEtag && storedEtag === clientEtag) {
+          return new Response(null, { status: 304 });
+        }
+        
+        // Build response headers.
+        const headers = new Headers();
+        headers.set("Content-Type", "application/octet-stream");
+        headers.set("Content-Encoding", "identity");
+        headers.set("Cache-Control", "no-transform");
+        if (storedEtag) {
+          headers.set("ETag", storedEtag);
+        }
+        
+        return new Response(value, {
+          status: 200,
+          headers
+        });
+      } catch (e) {
+        return new Response(e.message, { status: 500 });
       }
-
-      // Get the stored etag from metadata.
-      const storedEtag = (metadata && metadata.etag);
-
-      // Retrieve the client's If-None-Match header.
-      const ifNoneMatch = request.headers.get("if-none-match");
-
-      // Compare the stored etag with the client's etag.
-      if (storedEtag && ifNoneMatch && storedEtag === ifNoneMatch) {
-        return new Response(null, { status: 304 });
-      }
-
-      // Build response headers.
-      const responseHeaders = {
-        "Content-Type": "application/octet-stream",
-        "Content-Encoding": "identity",
-        "Cache-Control": "no-transform"
-      };
-
-      if (storedEtag) {
-        responseHeaders["ETag"] = '"' + storedEtag + '"';
-      }
-
-      return new Response(result, {
-        status: 200,
-        headers: responseHeaders
-      });
     }
-
+ 
     return new Response("Not found", { status: 404 });
   }
+
 };
