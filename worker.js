@@ -36,13 +36,13 @@ export default {
         return new Response("Missing id", { status: 400 });
       }
       // Retrieve the binary data along with its metadata from KV.
-      const result = await env.url_kv.get("k_" + id, { type: "arrayBuffer", metadata: true });
+      const { result, metadata } = await env.url_kv.getWithMetadata("k_" + id, "arrayBuffer");
       if (result === null) {
         return new Response("Not found", { status: 404 });
       }
 
       // Get the stored etag from metadata.
-      const storedEtag = (result.metadata && result.metadata.etag);
+      const storedEtag = (metadata && metadata.etag);
 
       // Retrieve the client's If-None-Match header.
       const ifNoneMatch = request.headers.get("if-none-match");
@@ -63,7 +63,7 @@ export default {
         responseHeaders["ETag"] = '"' + storedEtag + '"';
       }
 
-      return new Response(result.value, {
+      return new Response(result, {
         status: 200,
         headers: responseHeaders
       });
