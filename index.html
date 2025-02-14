@@ -927,14 +927,13 @@
 		setTimeout(function() {
 			txtArea.focus();
 		}, 0);
-
+		document.title = "post.to/#" + newAnchor; 
 		if ( anchor ) {
 			history.pushState(null, null, '#' + newAnchor);
 		} else {
 			history.replaceState(null, null, '#' + newAnchor);			
 		}
-		
-		document.title = "post.to/#" + newAnchor; 
+
 		anchor = newAnchor;
 		wasEdited = false;	// no because saveContent has async? mmm not anymore!!! (remove if async again)
 	}
