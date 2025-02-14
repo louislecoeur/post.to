@@ -204,9 +204,9 @@
 </head>
 
 <body>
-	<textarea id="txtArea" spellcheck="false" autofocus autocapitalize="none" 
+	<textarea id="txtArea" spellcheck="false" autocapitalize="none" 
     		  autocomplete="off" autocorrect="off" spellcheck="false" placeholder=""></textarea>
-	<!--<div id="rowNumbers"></div>-->
+	<!--<div id="rowNumbers"></div>--> <!--autofocus-->
 
 	<div id="topButtons">
 
@@ -248,10 +248,11 @@
 		  </svg>
 		</button>	
 
-
 	</div>
 
   <script>
+	
+	// DOM elements	
 	const txtArea = document.getElementById("txtArea");
 	//const rowNumbers = document.getElementById("rowNumbers");
 	const addButton = document.getElementById("addButton");
@@ -260,6 +261,11 @@
 	const pushButton = document.getElementById("pushButton");
 	const pullButton = document.getElementById("pullButton");
 
+	// Global variables
+	var anchor = "";
+	var wasEdited = false;
+	// Global cache for computed hashes (seed → { anchorHash, h2 }).
+	var computedHashes = {};
 
   /****************************
    * Helper functions *
@@ -308,9 +314,6 @@
 		  return text;
 		}
 
-
-		// Global cache for computed hashes (seed → { anchorHash, h2 }).
-	let computedHashes = {};
 
 	// Helper: Convert a Uint8Array (or ArrayBuffer) to a base64url encoded string.
 	function bufferToBase64Url(buffer) {
@@ -389,8 +392,10 @@
 	  return plainBuffer;
 	}
 
-	function generateRandomAnchor() {
-	   let randomBytes = new Uint8Array(30);  // 18*8=144 bits or 21*8 = 168 bits or 30*8 = 240?
+	function generateRandomAnchor(numBytes) {
+	   if ( !numBytes )
+	   		numBytes = 30;
+	   let randomBytes = new Uint8Array(numBytes);  // 18*8=144 bits or 21*8 = 168 bits or 30*8 = 240?
 	   crypto.getRandomValues(randomBytes);
 	   return bufferToBase64Url(randomBytes);
 	}
@@ -464,18 +469,16 @@
 	  pushButton.disabled = true;
 
 	  try {
-	    // convAnchor is your seed (a base62 string).
-	    const seed = convAnchor;
+	    // anchor is your seed (a base62 string).
+	    const seed = anchor;
 	    
 	    // Use cached computed hashes if available.
 	    if (!computedHashes[seed]) {
 	      computedHashes[seed] = await computeHashes(seed);
 	    }
-	    const { anchorHash, h2 } = computedHashes[seed];
 
-	    // Prepare the payload.
+	    const { anchorHash, h2 } = computedHashes[seed];
 	    const text = txtArea.value;
-	    // Compress the text (returns an ArrayBuffer).
 	    const compressedData = await compressTextToGzip(text);
 
 	    // Derive an AES key from h2.
@@ -498,6 +501,7 @@
 	    });
 
 	    if (response.ok) {
+	       removeEdited(anchor);  // we have the last version since we overwrote the server's copy
 	      //console.log("Push successful");
 	    } else {
 	      console.error("Push failed with status", response.status);
@@ -512,8 +516,9 @@
 	// -------------------- PULL --------------------
 
 	async function pullRemote() {
-	  // convAnchor is your seed.
-	  const seed = convAnchor;
+
+	  // anchor is your seed.
+	  const seed = anchor;
 	  
 	  // Use cached computed hashes if available.
 	  if (!computedHashes[seed]) {
@@ -537,10 +542,28 @@
 	      // Decompress to retrieve the original text.
 	      const newText = await uncompressGzipToText(decryptedCompressedData);
 	      const prevText = txtArea.value;
+
 	      if (newText !== prevText) {
+
+	      	// update text but reload location
+	      	let savedScroll = txtArea.scrollTop;
+	      	let caretPosition = txtArea.selectionStart;
 	        txtArea.value = newText;
-	        saveContent();
+	        setTimeout(function() {
+	       	txtArea.scrollTop = parseInt(savedScroll, 10);
+	        if (caretPosition !== null)
+	        	txtArea.setSelectionRange(parseInt(caretPosition, 10), parseInt(caretPosition, 10));
+	        }, 10);
+
+	        //SAVE COPY TO LOCAL STORAGE / FILE for faster load and updates later: saveContent(); // will do directly from the zip
+		    //localStorage.setItem("scroll_" + anchor, txtArea.scrollTop);
+		    //localStorage.setItem("caret_" + anchor, txtArea.selectionStart);
+		    //opfsStorage.setItem(key, compressed); // Fire-and-forget
 	      }
+
+	      // remove saved file etc.
+	      removeEdited(anchor);
+
 	      //console.log("Pull successful");
 	    } else {
 	      console.error("Pull failed with status", response.status);
@@ -551,192 +574,213 @@
 	}
 
 	pullButton.addEventListener("click", async function() {
-	  if (pullButton.disabled) return;
+	  if (pullButton.disabled)
+	  	return;
 	  pullButton.disabled = true;
 	  await pullRemote();
 	  pullButton.disabled = false;
 	});
 
+  // ----------------------------------------------------------------
+	// OPFS Storage Controller (fire-and-forget writes)
+	class OpfsStorage {
+	  // Private method (valid in a class)
+	  async #getRoot() {
+	    return navigator.storage.getDirectory();
+	  }
+
+	  // Non-blocking write
+	  setItem(key, arrayBuffer) {
+	    (async () => {
+	      try {
+	        const root = await this.#getRoot();
+	        const safeKey = encodeKey(key);
+	        const fileHandle = await root.getFileHandle(safeKey, { create: true });
+	        const writable = await fileHandle.createWritable();
+	        await writable.write(arrayBuffer);
+	        await writable.close();
+	      } catch (error) {
+	        console.error('OPFS write error:', error);
+	      }
+	    })();
+	  }
+
+	  // Blocking read
+	  async getItem(key) {
+	    try {
+	      const root = await this.#getRoot();
+	      const safeKey = encodeKey(key);
+	      const fileHandle = await root.getFileHandle(safeKey);
+	      const file = await fileHandle.getFile();
+	      return await file.arrayBuffer();
+	    } catch (error) {
+	      if (error.name === 'NotFoundError') return null;
+	      throw error;
+	    }
+	  }
+
+	  // removeItem if needed
+	  async removeItem(key) {
+	    try {
+	      const root = await this.#getRoot();
+	      const safeKey = encodeKey(key);
+	      await root.removeEntry(safeKey);
+	    } catch (error) {
+	      if (error.name !== 'NotFoundError') throw error;
+	    }
+	  }
+	}
+
+	// Create a singleton instance
+	const opfsStorage = new OpfsStorage();
+
+	// Add a deleteFile function to match your saveFile/loadFile pattern
+	async function deleteFile(key) {
+	  try {
+	    await opfsStorage.removeItem(key);
+	    console.log(`File ${key} deleted successfully`);
+	    return true;
+	  } catch (error) {
+	    console.error('Failed to delete file:', error);
+	    return false;
+	  }
+	}
+
+	// Usage with your existing compression functions
+	async function saveFile(key, text) {
+	    const compressed = await compressTextToGzip(text);
+	    opfsStorage.setItem(key, compressed); // Fire-and-forget
+	    return compressed;
+	}
+
+	async function loadFile(key) {
+	    const compressed = await opfsStorage.getItem(key);
+	    return compressed ? await uncompressGzipToText(compressed) : null;
+	}
+
+
   /****************************
    * Conversation Anchor Code *
    ****************************/
 
-	// Global variables
-	let convAnchor;
-	let contentKey;
-
-	function loadFromStorage() { 
-	  contentKey = "content_" + convAnchor;
-
-	  // Load any saved content for this anchor.
-	  let savedContent = localStorage.getItem(contentKey);
-	  if (savedContent !== null) {
-	    txtArea.value = savedContent;
-	    // Load caret position.
-	    let caretPosition = localStorage.getItem("caret_" + convAnchor);
-	    if (caretPosition !== null) {
-	      setTimeout(function() {
+	async function loadFromStorage(savedCaret) {
+	    txtArea.value = await loadFile(anchor);
+	    setTimeout(function() {
+	        //txtArea.setSelectionRange(parseInt(caretPosition, 10), parseInt(caretPosition, 10));
+	        textarea.selectionEnd = textarea.selectionStart = parseInt(savedCaret, 10);
+	        txtArea.blur();
 	        txtArea.focus();
-	        txtArea.setSelectionRange(parseInt(caretPosition, 10), parseInt(caretPosition, 10));
-	      }, 0);
+	    }, 1);
+	}
+
+	function loadContent() {
+		// Global conversation anchor code.
+		if ( window.location.hash ) {
+			anchor = window.location.hash.substring(1);
+			document.title = "post.to/#" + anchor;
+			let savedCaret = localStorage.getItem(anchor);
+			if ( savedCaret === null ) {
+			    pullButton.disabled = true;
+			  	pullRemote();
+			    pullButton.disabled = false;
+			} else {
+			 	loadFromStorage(savedCaret);
+			}
+		} else {		
+			newDoc();
+		}
+	}
+
+	function hashChangeHandler() {
+	// Save current content, caret, and scroll for the old anchor.
+		saveContent();  // check if content was edited before saving
+		loadContent();
+  	}
+
+	// run it right away
+	// loadContent();
+	document.addEventListener("DOMContentLoaded", loadContent);
+  	window.addEventListener("hashchange", hashChangeHandler);
+  	
+	// Throttle with trailing invocation: 
+	// It calls `fn` immediately if 10s have passed since the last call,
+	// and if not, it schedules a trailing call that fires after the remaining time.
+	/*
+	function throttle(fn, delay) {
+	  let timeout = null;
+	  let lastCall = 0;
+	  let lastArgs;
+
+	  return function(...args) {
+	    const now = Date.now();
+	    const remaining = delay - (now - lastCall);
+	    lastArgs = args;
+	    
+	    // If enough time has passed, call immediately.
+	    if (remaining <= 0) {
+	      if (timeout) {
+	        clearTimeout(timeout);
+	        timeout = null;
+	      }
+	      lastCall = now;
+	      fn.apply(this, args);
+	    } 
+	    // Otherwise, if no trailing call is scheduled, schedule one.
+	    else if (!timeout) {
+	      timeout = setTimeout(() => {
+	        lastCall = Date.now();
+	        timeout = null;
+	        fn.apply(this, lastArgs);
+	      }, remaining);
 	    }
-	    // Load scroll position.
-	    let savedScroll = localStorage.getItem("scroll_" + convAnchor);
-	    if (savedScroll !== null) {
-	      setTimeout(function() {
-	        txtArea.scrollTop = parseInt(savedScroll, 10);
-	        //updateVisibleLineNumbers();
-	      }, 0);
-	    }
-	  } else {
-	      // If there's no saved content, clear the textarea and focus it.
-	      txtArea.value = "";
-	      setTimeout(function() {
-	        txtArea.focus();
-	      }, 0);	  	
 	  }
 	}
-
-
-	// Global conversation anchor code.
-	if ( window.location.hash ) {
-		convAnchor = window.location.hash.substring(1);
-		contentKey = "content_" + convAnchor;
-		document.title = "post.to/#" + convAnchor;
-
-		let savedContent = localStorage.getItem(contentKey);
-		if ( savedContent == null ) {
-			localStorage.setItem('conversationAnchor', convAnchor);
-		  	pullRemote();
-		 } else {
-		 	loadFromStorage()
-		 }
-	
-	} else {
-		convAnchor = localStorage.getItem('conversationAnchor');
-		
-		if (!convAnchor) {
-			convAnchor = generateRandomAnchor(20);
-			contentKey = "content_" + convAnchor;
-			localStorage.setItem('conversationAnchor', convAnchor);
-			document.title = "post.to/#" + convAnchor;
-
-		} else {
-			contentKey = "content_" + convAnchor;
-			document.title = "post.to/#" + convAnchor;
-			loadFromStorage();
-		}
-
-		document.title = "post.to/#" + convAnchor;
-		if(history.pushState)
-		    history.pushState(null, null, '#' + convAnchor);
-		else
-		    location.hash = '#' + convAnchor;
-
-	}
-
+	*/
   
-// Throttle with trailing invocation: 
-// It calls `fn` immediately if 10s have passed since the last call,
-// and if not, it schedules a trailing call that fires after the remaining time.
-function throttle(fn, delay) {
-  let timeout = null;
-  let lastCall = 0;
-  let lastArgs;
-
-  return function(...args) {
-    const now = Date.now();
-    const remaining = delay - (now - lastCall);
-    lastArgs = args;
-    
-    // If enough time has passed, call immediately.
-    if (remaining <= 0) {
-      if (timeout) {
-        clearTimeout(timeout);
-        timeout = null;
-      }
-      lastCall = now;
-      fn.apply(this, args);
-    } 
-    // Otherwise, if no trailing call is scheduled, schedule one.
-    else if (!timeout) {
-      timeout = setTimeout(() => {
-        lastCall = Date.now();
-        timeout = null;
-        fn.apply(this, lastArgs);
-      }, remaining);
-    }
-  }
-}
-
   function saveContent() {
-    localStorage.setItem(contentKey, txtArea.value);
-    localStorage.setItem("caret_" + convAnchor, txtArea.selectionStart);
-    localStorage.setItem("scroll_" + convAnchor, txtArea.scrollTop);
-    //console.log("Saved content, caret and scroll for anchor", convAnchor, "at", new Date().toLocaleTimeString());
+  	if ( wasEdited ) {
+	    localStorage.setItem(anchor, txtArea.selectionStart);
+	    saveFile(anchor, txtArea.value);
+	}
   }
 
   // Create a throttled version that saves at most once every 10 seconds.
-  const throttledSaveContent = throttle(saveContent, 10000);
-  txtArea.addEventListener("input", throttledSaveContent);
+  // const throttledSaveContent = throttle(saveContent, 10000);
+  // txtArea.addEventListener("input", throttledSaveContent);
+  
+  function editedHandler() {
+     wasEdited = true;
+     txtArea.removeEventListener("input", editedHandler);
+  }
+
+  function removeEdited(anchor) {
+     wasEdited = false;
+     if ( localStorage.getItem(anchor) !== null ) {
+     	opfsStorage.removeItem(anchor);  // should be a file if there is a localStorage key
+     	localStorage.removeItem(anchor);  // no error if undefined
+     }
+     txtArea.addEventListener("input", editedHandler);
+  }
+
+  txtArea.addEventListener("input", editedHandler);
   window.addEventListener("beforeunload", saveContent);
 
   /*****************************************
    * Update on Anchor (hashchange) Events  *
    *****************************************/
 
-function newDoc() {
-	convAnchor = generateRandomAnchor(20);
-	contentKey = "content_" + convAnchor;
-	localStorage.setItem('conversationAnchor', convAnchor);
-
-	// If there's no saved content, clear the textarea and focus it.
-	txtArea.value = "";
-	setTimeout(function() {
-	txtArea.focus();
-	}, 0);	  	
-
-	document.title = "post.to/#" + convAnchor;
-	if(history.pushState)
-	    history.pushState(null, null, '#' + convAnchor);
-	else
-	    location.hash = '#' + convAnchor;
-}
-
-
-  function hashChangeHandler() {
-    // Save current content, caret, and scroll for the old anchor.
-
-    saveContent();
-    
-    // Update convAnchor from the new URL hash.
-    convAnchor = window.location.hash.substring(1);
-
-	if (!convAnchor) {
-		newDoc();
-
-	} else {
-		// check if we have it in storage, and check remote too!
-
-		contentKey = "content_" + convAnchor;
-		document.title = "post.to/#" + convAnchor;
-		if(history.pushState)
-		    history.pushState(null, null, '#' + convAnchor);
-		else
-		    location.hash = '#' + convAnchor;
-		let savedContent = localStorage.getItem(contentKey);		
-		if ( savedContent == null ) {
-			localStorage.setItem('conversationAnchor', convAnchor);
-		  	pullRemote();
-		 } else {
-		 	loadFromStorage()
-		 }
+	function newDoc() {
+		anchor = generateRandomAnchor(30);
+		txtArea.value = "";
+		setTimeout(function() {
+			txtArea.focus();
+		}, 0);
+		document.title = "post.to/#" + anchor;   
+		history.pushState(null, null, '#' + anchor);
+		wasEdited = false;	
 	}
 
 
-  }
-
-  window.addEventListener("hashchange", hashChangeHandler);
 
   /*********************
    * Line Number Logic *
