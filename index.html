@@ -786,7 +786,7 @@
 			worker.postMessage({ key: savedKey, content: savedText });
 			moveToOPFS("text." + anchor);
 			//localStorage.removeItem("text." + anchor); // delete the localStorage record
-			//opfsStorage.setItem(anchor, savedText);  // so we have it in memory next time, not blocking
+			//opfsStorage.setItem("text." + anchor, savedText);  // so we have it in memory next time, not blocking
 		} else {
 			savedText = await opfsStorage.getItem(anchor);
 			moveToOPFS();  // in case we have other unsaved keys...
@@ -923,7 +923,7 @@
      	wasEdited = false;
 
      if ( localStorage.getItem("caret." + anchor) !== null ) {
-     	opfsStorage.removeItem(anchor);  // should be a file if there is a localStorage key
+     	opfsStorage.removeItem("text." + anchor);  // should be a file if there is a localStorage key
      	localStorage.removeItem("caret." + anchor);  // no error if undefined
      }
      txtArea.addEventListener("input", editedHandler);
