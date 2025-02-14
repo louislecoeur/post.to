@@ -537,6 +537,8 @@
 	// -------------------- PULL --------------------
 
 	async function pullRemote() {
+	  // Disable the pull button immediately.
+	  pullButton.disabled = true;
 
 	  // anchor is your seed.
 	  const seed = anchor;
@@ -591,15 +593,16 @@
 	    }
 	  } catch (err) {
 	    console.error("Pull error:", err);
+	  } finally {
+	    // Re-enable the pull button regardless of success or error.
+	    pullButton.disabled = false;	  	
 	  }
 	}
 
 	pullButton.addEventListener("click", async function() {
 	  if (pullButton.disabled)
 	  	return;
-	  pullButton.disabled = true;
-	  await pullRemote();
-	  pullButton.disabled = false;
+	  pullRemote();
 	});
 
   // ----------------------------------------------------------------
@@ -609,7 +612,7 @@
 	  const base64 = btoa(unescape(encodeURIComponent(key)));
 	  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 	}	
-	
+
 	// OPFS Storage Controller (fire-and-forget writes)
 	class OpfsStorage {
 	  // Private method (valid in a class)
@@ -699,6 +702,7 @@
 	        txtArea.blur();
 	        txtArea.focus();
 	    }, 1);
+	    wasEdited = false;  // no difference with the stored content
 	}
 
 	function loadContent() {
@@ -708,9 +712,7 @@
 			document.title = "post.to/#" + anchor;
 			let savedCaret = localStorage.getItem(anchor);
 			if ( savedCaret === null ) {
-			    pullButton.disabled = true;
 			  	pullRemote();
-			    pullButton.disabled = false;
 			} else {
 			 	loadFromStorage(savedCaret);
 			}
@@ -718,6 +720,13 @@
 			newDoc();
 		}
 	}
+
+  function saveContent() {
+  	if ( wasEdited ) {
+	    localStorage.setItem(anchor, txtArea.selectionStart);
+	    saveFile(anchor, txtArea.value);
+	}
+  }
 
 	function hashChangeHandler() {
 	// Save current content, caret, and scroll for the old anchor.
@@ -764,13 +773,7 @@
 	  }
 	}
 	*/
-  
-  function saveContent() {
-  	if ( wasEdited ) {
-	    localStorage.setItem(anchor, txtArea.selectionStart);
-	    saveFile(anchor, txtArea.value);
-	}
-  }
+
 
   // Create a throttled version that saves at most once every 10 seconds.
   // const throttledSaveContent = throttle(saveContent, 10000);
