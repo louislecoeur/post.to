@@ -796,10 +796,25 @@
 
   txtArea.addEventListener("input", editedHandler);
   
+  /*
   document.addEventListener("visibilitychange", () => {
 		if ( document.hidden )
 			saveContent();
   });
+  */
+
+  async function saveContentAsync() {
+  if (wasEdited) {
+    localStorage.setItem(anchor, txtArea.selectionStart);
+    await saveFile(anchor, txtArea.value);
+  }
+}
+
+	document.addEventListener("beforeunload", () => {
+	  if (document.hidden) {
+	    saveContentAsync().catch(console.error);
+	  }
+	});
 
   /*****************************************
    * Update on Anchor (hashchange) Events  *
