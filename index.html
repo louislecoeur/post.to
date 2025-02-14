@@ -586,7 +586,7 @@
 
 	      // remove saved file etc.
 	      removeEdited(anchor);
-
+	      
 	      //console.log("Pull successful");
 	    } else {
 	      console.error("Pull failed with status", response.status);
@@ -788,7 +788,7 @@
 			//localStorage.removeItem("text." + anchor); // delete the localStorage record
 			//opfsStorage.setItem("text." + anchor, savedText);  // so we have it in memory next time, not blocking
 		} else {
-			savedText = await opfsStorage.getItem(anchor);
+			savedText = await opfsStorage.getItem("text." + anchor);
 			moveToOPFS();  // in case we have other unsaved keys...
 		}
 
