@@ -622,6 +622,33 @@
 
 	  // Non-blocking write
 	  setItem(key, arrayBuffer) {
+	  	// CHANGE CODE FOR TEXT STRING ONLY
+	  	// ...
+
+		  (async () => {
+		    try {
+		      const root = await this.#getRoot();
+		      const safeKey = encodeKey(key);
+		      const fileHandle = await root.getFileHandle(safeKey, { create: true });
+		      
+		      let writable;
+		      if (typeof fileHandle.createWritable === "function") {
+		        writable = await fileHandle.createWritable();
+		      } else if (typeof fileHandle.getWritable === "function") {
+		        writable = await fileHandle.getWritable();
+		      } else {
+		        throw new Error("No writable method available on fileHandle.");
+		      }
+		      
+		      await writable.write(text);
+		      await writable.close();
+		    } catch (error) {
+		      console.error('OPFS write error:', error);
+		    }
+		  })();
+
+
+	  	/*
 	    (async () => {
 	      try {
 	        const root = await this.#getRoot();
@@ -634,10 +661,29 @@
 	        console.error('OPFS write error:', error);
 	      }
 	    })();
+	    */
+
 	  }
 
 	  // Blocking read
 	  async getItem(key) {
+	    
+	  	// CHANGE CODE FOR TEXT STRING ONLY
+	  	// ...
+
+	    try {
+	      const root = await this.#getRoot();
+	      const safeKey = encodeKey(key);
+	      const fileHandle = await root.getFileHandle(safeKey);
+	      const file = await fileHandle.getFile();
+	      // Use the text() method to get the file contents as a string.
+	      return await file.text();
+	    } catch (error) {
+	      if (error.name === 'NotFoundError') return null;
+	      throw error;
+	    }
+
+	    /*
 	    try {
 	      const root = await this.#getRoot();
 	      const safeKey = encodeKey(key);
@@ -648,6 +694,8 @@
 	      if (error.name === 'NotFoundError') return null;
 	      throw error;
 	    }
+		*/
+
 	  }
 
 	  // removeItem if needed
@@ -679,14 +727,17 @@
 
 	// Usage with your existing compression functions
 	async function saveFile(key, text) {
-	    const compressed = await compressTextToGzip(text);
+	    /*const compressed = await compressTextToGzip(text);
 	    opfsStorage.setItem(key, compressed); // Fire-and-forget
-	    return compressed;
+	    return compressed;*/
+	    opfsStorage.setItem(key, text);
 	}
 
 	async function loadFile(key) {
-	    const compressed = await opfsStorage.getItem(key);
-	    return compressed ? await uncompressGzipToText(compressed) : null;
+	    //const compressed = await opfsStorage.getItem(key);
+	    //return compressed ? await uncompressGzipToText(compressed) : null;
+		const text = await opfsStorage.getItem(key);
+		return text;
 	}
 
 
@@ -803,18 +854,7 @@
   });
   */
 
-  async function saveContentAsync() {
-  if (wasEdited) {
-    localStorage.setItem(anchor, txtArea.selectionStart);
-    await saveFile(anchor, txtArea.value);
-  }
-}
-
-	document.addEventListener("beforeunload", () => {
-	  if (document.hidden) {
-	    saveContentAsync().catch(console.error);
-	  }
-	});
+	window.addEventListener("beforeunload", saveContent);
 
   /*****************************************
    * Update on Anchor (hashchange) Events  *
