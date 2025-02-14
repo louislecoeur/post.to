@@ -767,18 +767,19 @@
 
 	async function saveContent() {
 		if ( wasEdited ) {
+			let fileHandle = wasEdited;
+			wasEdited = false;
 	    	localStorage.setItem(anchor, txtArea.selectionStart);
-	    	await wasEdited.write(txtArea.value);
-	    	await wasEdited.close();
-	    	//saveFile(anchor, txtArea.value);
+	    	await fileHandle.write(txtArea.value);
+	    	await fileHandle.close();
 		}
-		wasEdited = false;
 	}
 
    window.addEventListener("beforeunload", saveContent);
    window.addEventListener("pagehide", saveContent);
    document.addEventListener("visibilitychange", saveContent);
    window.addEventListener("unload", saveContent);
+   txtArea.addEventListener("blur", saveContent);
 
 	function hashChangeHandler() {
 	// Save current content, caret, and scroll for the old anchor.
