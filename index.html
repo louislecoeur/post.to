@@ -603,6 +603,13 @@
 	});
 
   // ----------------------------------------------------------------
+
+
+	function encodeKey(key) {
+	  const base64 = btoa(unescape(encodeURIComponent(key)));
+	  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+	}	
+	
 	// OPFS Storage Controller (fire-and-forget writes)
 	class OpfsStorage {
 	  // Private method (valid in a class)
