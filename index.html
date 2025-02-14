@@ -497,7 +497,7 @@
 	    // Compute the SHA-1 hash (base64 encoded) of the salted text.
 	    const textHashBase64 = await computeSHA1Base64(saltedText);
 	    //console.log("SHA-1 (base64) of salted text:", textHashBase64);
-	    
+
 	    // Compress the original text.
 	    const compressedData = await compressTextToGzip(text);
 
@@ -509,7 +509,7 @@
 
 	    // Build the URL with the record ID and computed text hash.
 	    const url = "/push?id=" + encodeURIComponent(anchorHash) +
-	                "&etag=" + encodeURIComponent(textHashBase64);
+	                "&h=" + encodeURIComponent(textHashBase64);
 
 	    // Send the POST with the encrypted binary payload.
 	    const response = await fetch(url, {
