@@ -795,7 +795,11 @@
   }
 
   txtArea.addEventListener("input", editedHandler);
-  window.addEventListener("pagehide", saveContent);
+  
+  document.addEventListener("visibilitychange", () => {
+		if ( document.hidden )
+			saveContent();
+  });
 
   /*****************************************
    * Update on Anchor (hashchange) Events  *
