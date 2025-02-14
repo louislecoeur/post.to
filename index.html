@@ -763,7 +763,7 @@
 			localStorage.removeItem("text." + anchor); // delete the localStorage record
 			opfsStorage.setItem(anchor, savedText);  // so we have it in memory next time, not blocking
 		} else {
-			savedText = await opfsStorage.getItem(key);
+			savedText = await opfsStorage.getItem(anchor);
 		}
 
 		// call the "mover" from localStorage to opfs
