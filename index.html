@@ -791,6 +791,7 @@
 			} else {
 			 	loadFromStorage(savedCaret);
 			}
+		
 		} else {		
 			newDoc();
 		}
@@ -924,8 +925,8 @@
 		setTimeout(function() {
 			txtArea.focus();
 		}, 0);
-		document.title = "post.to/#" + anchor;   
 		history.pushState(null, null, '#' + anchor);
+		document.title = "post.to/#" + anchor;   
 		//wasEdited = false;	
 	}
 
