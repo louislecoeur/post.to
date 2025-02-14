@@ -687,9 +687,9 @@
 	const workerCode = `
 	  self.addEventListener("message", async (event) => {
 	    const { key, content } = event.data;
-	    console.log("event data", event.data);
-	    console.log("key", key);
-	    console.log("content", content);
+	    //console.log("event data", event.data);
+	    //console.log("key", key);
+	    //console.log("content", content);
 	    try {
 	      const root = await navigator.storage.getDirectory();
 	      const safeKey = btoa(unescape(encodeURIComponent(key)))
