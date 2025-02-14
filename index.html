@@ -670,39 +670,87 @@
 	      if (error.name !== 'NotFoundError') throw error;
 	    }
 	  }
-
-
 	}
 
 	// Create a singleton instance
 	const opfsStorage = new OpfsStorage();
 
-	// Add a deleteFile function to match your saveFile/loadFile pattern
-	async function deleteFile(key) {
-	  try {
-	    await opfsStorage.removeItem(key);
-	    console.log(`File ${key} deleted successfully`);
-	    return true;
-	  } catch (error) {
-	    console.error('Failed to delete file:', error);
-	    return false;
+
+
+  /****************************
+   * Worker code from LS OPFS *
+   ****************************/
+
+	// Create the worker (if not already created using a Blob or external file)
+	const workerCode = `
+	  self.addEventListener("message", async (event) => {
+	    const { key, content } = event.data;
+	    try {
+	      const root = await navigator.storage.getDirectory();
+	      // Use the key directly (you might want to sanitize or encode it)
+	      const safeKey = key;
+	      const fileHandle = await root.getFileHandle(safeKey, { create: true });
+	      
+	      let writable;
+	      if (typeof fileHandle.createWritable === "function") {
+	        writable = await fileHandle.createWritable();
+	      } else if (typeof fileHandle.getWritable === "function") {
+	        writable = await fileHandle.getWritable();
+	      } else {
+	        throw new Error("No writable method available on fileHandle.");
+	      }
+	      
+	      await writable.write(content);
+	      await writable.close();
+	      
+	      // Signal success back to the main thread.
+	      self.postMessage({ key, success: true });
+	    } catch (error) {
+	      self.postMessage({ key, success: false, error: error.message });
+	    }
+	  });
+	`;
+
+
+	const blob = new Blob([workerCode], { type: "application/javascript" });
+	const workerURL = URL.createObjectURL(blob);
+	const worker = new Worker(workerURL);
+
+	// Listen for success messages from the worker.
+	worker.addEventListener("message", (event) => {
+	  const { key, success, error } = event.data;
+	  if (success) {
+	    console.log(`Successfully saved ${key} to OPFS.`);
+	    // Remove the item from localStorage now that it's been written.
+	    localStorage.removeItem(key);
+	  } else {
+	    console.error(`Failed to save ${key}: ${error}`);
 	  }
+	});
+
+	// This function iterates over localStorage keys that start with "text."
+	// and sends them to the worker.
+	async function moveToOPFS() {
+	  const unsavedKeys = [];
+	  
+	  // Iterate over all localStorage keys and filter those starting with "text."
+	  for (let i = 0; i < localStorage.length; i++) {
+	    const key = localStorage.key(i);
+	    if (key.startsWith("text.")) {
+	      unsavedKeys.push(key);
+	    }
+	  }
+
+	  // Send each unsaved key and its content to the worker.
+	  unsavedKeys.forEach(key => {
+	    const content = localStorage.getItem(key);
+	    if (content !== null) {
+	      worker.postMessage({ key, content });
+	    }
+	  });
 	}
 
-	// Usage with your existing compression functions
-	async function saveFile(key, text) {
-	    /*const compressed = await compressTextToGzip(text);
-	    opfsStorage.setItem(key, compressed); // Fire-and-forget
-	    return compressed;*/
-	    opfsStorage.setItem(key, text);
-	}
 
-	async function loadFile(key) {
-	    //const compressed = await opfsStorage.getItem(key);
-	    //return compressed ? await uncompressGzipToText(compressed) : null;
-		const text = await opfsStorage.getItem(key);
-		return text;
-	}
 
 
   /****************************
@@ -710,13 +758,18 @@
    ****************************/
 
 	async function loadFromStorage(savedCaret) {
-		let savedText = localStorage.getItem("unsaved." + anchor);
-		if ( savedText != null ) {
-			localStorage.removeItem("unsaved." + anchor); // delete the localStorage record
-			opfsStorage.setItem(key, savedText);  // so we have it in memory next time, not blocking
+		let savedText = localStorage.getItem("text." + anchor);
+		if ( savedText !== null ) {
+			localStorage.removeItem("text." + anchor); // delete the localStorage record
+			opfsStorage.setItem(anchor, savedText);  // so we have it in memory next time, not blocking
 		} else {
-			savedText = await loadFile(anchor);
+			savedText = await opfsStorage.getItem(key);
 		}
+
+		// call the "mover" from localStorage to opfs
+		moveToOPFS();
+
+
 		txtArea.value = savedText;
 	    setTimeout(function() {
 	    	let caretPosInt = parseInt(savedCaret, 10);
@@ -759,6 +812,7 @@
 	*/
 
 	function saveContent() {
+		console.log('in saveContent...');
 		if ( wasEdited ) {
 			wasEdited = false;
 			if ( anchor ) {
@@ -768,7 +822,7 @@
 		}
 	}
 
-   document.addEventListener("beforeunload", saveContent);
+   window.addEventListener("beforeunload", saveContent);
    /*window.addEventListener("pagehide", saveContent);
    document.addEventListener("visibilitychange", saveContent);
    window.addEventListener("unload", saveContent);
