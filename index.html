@@ -865,9 +865,9 @@
 	}
    
    let isChrome = !!window.chrome; 
-   window.addEventListener("beforeunload",  function() {txtArea.value = "beforeunload\n" + txtArea.value; if (isChrome) {saveContent()} else { saveContentToDisk() }; }); // saveContentToDisk(); 
-   window.addEventListener("pagehide", function() {txtArea.value = "pagehide\n" + txtArea.value; if (isChrome) {saveContent()} else { saveContentToDisk() }; });
-   document.addEventListener("visibilitychange", function() {txtArea.value = "visibilitychange" + (document.hidden ? 0 : 1) + "\n" + txtArea.value; if (document.hidden) { if (isChrome) {saveContent()} else { saveContentToDisk() }; } }); 
+   window.addEventListener("beforeunload",  function() {txtArea.value = "beforeunload\n" + txtArea.value; saveContent(); }); // saveContentToDisk(); // if (isChrome) {saveContent()} else { saveContentToDisk() };
+   window.addEventListener("pagehide", function() {txtArea.value = "pagehide\n" + txtArea.value; saveContent(); }); // if (isChrome) {saveContent()} else { saveContentToDisk() };
+   document.addEventListener("visibilitychange", function() {txtArea.value = "visibilitychange" + (document.hidden ? 0 : 1) + "\n" + txtArea.value; if (document.hidden) { saveContent(); } });   // if (isChrome) {saveContent()} else { saveContentToDisk() };
    window.addEventListener("unload",  function() {txtArea.value = "unload\n" + txtArea.value });
    txtArea.addEventListener("blur",   function() {txtArea.value = "blur\n" + txtArea.value });
 
