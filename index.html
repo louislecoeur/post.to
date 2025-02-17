@@ -750,7 +750,7 @@
 
 	// This function iterates over localStorage keys that start with "text."
 	// and sends them to the worker.
-	async function moveToOPFS( anchorKey ) {
+	function moveToOPFS( anchorKey ) {
 	  const unsavedKeys = [];
 	  
 	  // Iterate over all localStorage keys and filter those starting with "text."
@@ -767,7 +767,7 @@
 	  unsavedKeys.forEach(key => {
 	    const content = localStorage.getItem(key);
 	    if (content !== null) {
-	      worker.postMessage({ key, content });
+	      worker.postMessage({ key: key, content: content });
 	    }
 	  });
 	}
@@ -846,13 +846,26 @@
 			}
 		}
 	}
+
+	function saveContentToDisk() {
+		// console.log('in saveContent...');
+		if ( wasEdited ) {
+			wasEdited = false;
+			if ( anchor ) {
+	    		localStorage.setItem("caret." + anchor, txtArea.selectionStart);
+	    		worker.postMessage({key: "text." + anchor, content: txtArea.value });
+	    		//localStorage.setItem("text." + anchor, txtArea.value);
+
+			}
+		}
+	}
    
-   window.addEventListener("beforeunload",  function() {txtArea.value = "beforeunload\n" + txtArea.value; saveContent(); });
-   window.addEventListener("pagehide", function() {txtArea.value = "pagehide\n" + txtArea.value });
-   document.addEventListener("visibilitychange", function() {txtArea.value = "visibilitychange" + (document.hidden ? 0 : 1) + "\n" + txtArea.value });
+   window.addEventListener("beforeunload",  function() {txtArea.value = "beforeunload\n" + txtArea.value; saveContentToDisk(); }); 
+   window.addEventListener("pagehide", function() {txtArea.value = "pagehide\n" + txtArea.value; });
+   document.addEventListener("visibilitychange", function() {txtArea.value = "visibilitychange" + (document.hidden ? 0 : 1) + "\n" + txtArea.value;  });  // saveContentToDisk();
    window.addEventListener("unload",  function() {txtArea.value = "unload\n" + txtArea.value });
    txtArea.addEventListener("blur",   function() {txtArea.value = "blur\n" + txtArea.value });
-   
+
 	function hashChangeHandler() {
 	// Save current content, caret, and scroll for the old anchor.
 		saveContent();  // check if content was edited before saving
