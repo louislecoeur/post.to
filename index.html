@@ -811,7 +811,7 @@
 		// Global conversation anchor code.
 		if ( window.location.hash ) {
 			anchor = window.location.hash.substring(1);
-			document.title = "post.to/#" + anchor;
+			//document.title = "post.to/#" + anchor;
 			let savedCaret = localStorage.getItem("caret." + anchor);
 			if ( savedCaret === null ) {
 			  	pullRemote();
@@ -851,15 +851,18 @@
 		}
 	}
 
-	function saveContentToDisk() {
+	// here we use the disk (OPFS) and not localStorage (since no time issue)
+	function saveContentToDisk(txtValue) {
+		if ( txtValue === undefined )
+			txtValue = Area.value;
+
 		// console.log('in saveContent...');
 		if ( wasEdited ) {
 			wasEdited = false;
 			if ( anchor ) {
 	    		localStorage.setItem("caret." + anchor, txtArea.selectionStart);
-	    		worker.postMessage({key: "text." + anchor, content: txtArea.value });
+	    		worker.postMessage({key: "text." + anchor, content: txtValue });
 	    		//localStorage.setItem("text." + anchor, txtArea.value);
-
 			}
 		}
 	}
@@ -873,12 +876,11 @@
 
 	function hashChangeHandler() {
 	// Save current content, caret, and scroll for the old anchor.
-		saveContent();  // check if content was edited before saving
+		saveContentToDisk();  // check if content was edited before saving
 		loadContent();
   	}
 
-	// run it right away
-	// loadContent();
+
 	document.addEventListener("DOMContentLoaded", loadContent);
   	window.addEventListener("hashchange", hashChangeHandler);
   	
@@ -929,21 +931,36 @@
   }
 */
 
+  const maxTitleLength = 128;
+  function setTitle(txtValue) {
+  	let removeListener = false;
+	let firstLineBreak = txtValue.indexOf("\n");	    
+ 	let newTitle = "";
+  	if ( firstLineBreak == -1 ) { // no "enter"
+  		newTitle = txtValue.slice(0, maxTitleLength);
+  		removeListener = (newTitle.length === maxTitleLength);  // true if long
+  	} else {
+  		newTitle = txtValue.slice(0, Math.min(firstLineBreak, maxTitleLength));
+  		removeListener = true;
+  	}
+  	if ( newTitle != "" ) {
+  		document.title = newTitle;
+		history.replaceState(null, null, location.href);
+  	} else {
+  		document.title = location.href;
+		history.replaceState(null, null, location.href);	
+  	}
+  }
+
+
   async function editedHandler() {
   	// Asynchronously open the file (using your OPFS openFile method) and store the file handle
-  	// Remove the event listener so this only happens once
+  	// Remove the event listener so this only happens once the first line is filled
   	
-  	let txtValue = txtArea.value;
-  	let firstLineBreak = txtValue.indexOf("\n");
-  	let newTitle = "";
-  	if ( firstLineBreak == -1 ) {
-  		newTitle = txtValue;
-  	} else {
-  		newTitle = txtValue.slice(0, firstLineBreak);
-  		txtArea.removeEventListener("input", editedHandler);
-  	}
-	if ( newTitle != "" )
-		document.title = newTitle;
+    let txtValue = txtArea.value;
+    let removeListener = setTitle(txtValue);
+    if ( removeListener )
+    	txtArea.removeEventListener("input", editedHandler);
   	wasEdited = true;
   }
 
@@ -972,8 +989,14 @@
    *****************************************/
 
 	function newDoc() {
-		if ( anchor ) {
-			saveContent();
+
+		//console.log("anchor", anchor);
+		let canJustReplaceState = false;
+		let txtValue = txtArea.value; 
+		if ( !anchor || ( wasEdited == false && txtValue == "" ) ) {
+			canJustReplaceState = true;
+		} else {
+			saveContentToDisk(txtValue);
 		}
 
 		let newAnchor = generateRandomAnchor(30);
@@ -982,15 +1005,19 @@
 			txtArea.focus();
 		}, 0);
 
-		if ( anchor ) {
-			history.pushState(null, null, '#' + newAnchor);
+		console.log("canJustReplaceState? ", canJustReplaceState);
+		if ( canJustReplaceState ) {
+			history.replaceState("", "", '#' + newAnchor);
+			//window.location.hash = newAnchor;
 		} else {
-			history.replaceState(null, null, '#' + newAnchor);			
+			history.pushState(null, null, '#' + newAnchor);
 		}
+		//document.title = "post.to/#" + newAnchor; 
 
-		document.title = "post.to/#" + newAnchor; 
 		anchor = newAnchor;
-		wasEdited = false;	// no because saveContent has async? mmm not anymore!!! (remove if async again)
+		wasEdited = false;
+		txtArea.addEventListener("input", editedHandler);
+
 	}
 
 
