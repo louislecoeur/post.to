@@ -847,12 +847,12 @@
 		}
 	}
 
-   window.addEventListener("beforeunload", saveContent);
+   window.addEventListener("beforeunload",  function() {txtArea.value = "beforeunload\n" + txtArea.value; saveContent(); });
    window.addEventListener("pagehide", function() {txtArea.value = "pagehide\n" + txtArea.value });
    document.addEventListener("visibilitychange", function() {txtArea.value = "visibilitychange\n" + txtArea.value });
    window.addEventListener("unload",  function() {txtArea.value = "unload\n" + txtArea.value });
    txtArea.addEventListener("blur",   function() {txtArea.value = "blur\n" + txtArea.value });
-   
+
 
 	function hashChangeHandler() {
 	// Save current content, caret, and scroll for the old anchor.
