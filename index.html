@@ -698,6 +698,7 @@
 	        .replace(/=+$/, '');
 	      const fileHandle = await root.getFileHandle(safeKey, { create: true });
 	      
+	      /*
 	      if (typeof fileHandle.createWritable === "function") {
 	        // Chrome (and other browsers supporting the async API)
 	        const writable = await fileHandle.createWritable();
@@ -708,7 +709,10 @@
 	        const writable = await fileHandle.getWritable();
 	        await writable.write(content);
 	        await writable.close();
-	      } else if (typeof fileHandle.createSyncAccessHandle === "function") {
+	      } else
+		  */
+
+	      if (typeof fileHandle.createSyncAccessHandle === "function") {
 	        // Safari: use the synchronous API available in Worker threads
 	        const accessHandle = await fileHandle.createSyncAccessHandle();
 	        const encoder = new TextEncoder();
