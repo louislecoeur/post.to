@@ -864,10 +864,10 @@
 		}
 	}
    
-   let isChrome = !!window.chrome; 
-   window.addEventListener("beforeunload",  function() {txtArea.value = "beforeunload\n" + txtArea.value; saveContent(); }); // saveContentToDisk(); // if (isChrome) {saveContent()} else { saveContentToDisk() };
-   window.addEventListener("pagehide", function() {txtArea.value = "pagehide\n" + txtArea.value; saveContent(); }); // if (isChrome) {saveContent()} else { saveContentToDisk() };
-   document.addEventListener("visibilitychange", function() {txtArea.value = "visibilitychange" + (document.hidden ? 0 : 1) + "\n" + txtArea.value; if (document.hidden) { saveContent(); } });   // if (isChrome) {saveContent()} else { saveContentToDisk() };
+   let isChrome = !!window.chrome; // if (isChrome) {saveContent()} else { saveContentToDisk() };
+   window.addEventListener("beforeunload",  function() { saveContent(); });  // txtArea.value = "beforeunload\n" + txtArea.value; 
+   window.addEventListener("pagehide", function() {saveContent(); }); // txtArea.value = "pagehide\n" + txtArea.value; 
+   document.addEventListener("visibilitychange", function() {if (document.hidden) { saveContent(); } }); // txtArea.value = "visibilitychange" + (document.hidden ? 0 : 1) + "\n" + txtArea.value; 
    window.addEventListener("unload",  function() {txtArea.value = "unload\n" + txtArea.value });
    txtArea.addEventListener("blur",   function() {txtArea.value = "blur\n" + txtArea.value });
 
@@ -928,10 +928,21 @@
      txtArea.removeEventListener("input", editedHandler);
   }
 */
+
   async function editedHandler() {
   	// Asynchronously open the file (using your OPFS openFile method) and store the file handle
   	// Remove the event listener so this only happens once
-  	txtArea.removeEventListener("input", editedHandler);
+  	
+  	let txtValue = txtArea.value;
+  	let firstLineBreak = txtValue.indexOf("\n");
+  	if ( firstLineBreak == -1 ) {
+  		let newTitle = txtValue;
+  	} else {
+  		let newTitle = txtValue.slice(0, firstLineBreak);
+  		txtArea.removeEventListener("input", editedHandler);
+  	}
+	if ( newTitle != "" )
+		document.title = newTitle;
   	wasEdited = true;
   }
 
