@@ -807,10 +807,13 @@
 	    wasEdited = false;  // no difference with the stored content
 	}
 
-	function loadContent() {
+	function loadContent( locationHash ) {
 		// Global conversation anchor code.
-		if ( window.location.hash ) {
-			anchor = window.location.hash.substring(1);
+		if ( !locationHash )
+			locationHash = window.location.hash;
+
+		if ( locationHash ) {
+			anchor = locationHash.substring(1);
 			//document.title = "post.to/#" + anchor;
 			let savedCaret = localStorage.getItem("caret." + anchor);
 			if ( savedCaret === null ) {
@@ -845,6 +848,7 @@
 		if ( wasEdited ) {
 			wasEdited = false;
 			if ( anchor ) {
+	    		localStorage.setItem("last", anchor);
 	    		localStorage.setItem("caret." + anchor, txtArea.selectionStart);
 	    		localStorage.setItem("text." + anchor, txtArea.value);
 			}
@@ -860,6 +864,7 @@
 		if ( wasEdited ) {
 			wasEdited = false;
 			if ( anchor ) {
+	    		localStorage.setItem("last", anchor);				
 	    		localStorage.setItem("caret." + anchor, txtArea.selectionStart);
 	    		worker.postMessage({key: "text." + anchor, content: txtValue });
 	    		//localStorage.setItem("text." + anchor, txtArea.value);
@@ -880,8 +885,18 @@
 		loadContent();
   	}
 
+  	function firstLoadContent() {
+  		let lastAnchor = localStorage.getItem("last");  		
+  		if ( lastAnchor && !window.location.hash ) {
+  			let locationHash = "#" + lastAnchor;
+			history.replaceState({}, null, locationHash);
+			loadContent( locationHash );		
+  		} else {
+  			loadContent( window.location.hash );  			
+  		}
+  	}
 
-	document.addEventListener("DOMContentLoaded", loadContent);
+	document.addEventListener("DOMContentLoaded", firstLoadContent);
   	window.addEventListener("hashchange", hashChangeHandler);
   	
 	// Throttle with trailing invocation: 
@@ -948,7 +963,7 @@
 		history.replaceState(null, null, location.href);
   	} else {
   		document.title = location.href;
-		history.replaceState(null, null, location.href);	
+		history.replaceState({}, null, location.href);	
   	}
   }
 
@@ -988,6 +1003,7 @@
    * Update on Anchor (hashchange) Events  *
    *****************************************/
 
+  	let stateObj = {};
 	function newDoc() {
 
 		//console.log("anchor", anchor);
@@ -1005,14 +1021,14 @@
 			txtArea.focus();
 		}, 0);
 
-		console.log("canJustReplaceState? ", canJustReplaceState);
+		//console.log("canJustReplaceState? ", canJustReplaceState);
 		if ( canJustReplaceState ) {
-			history.replaceState("", "", '#' + newAnchor);
+			history.replaceState(stateObj, "", '#' + newAnchor);
 			//window.location.hash = newAnchor;
 		} else {
 			history.pushState(null, null, '#' + newAnchor);
 		}
-		//document.title = "post.to/#" + newAnchor; 
+		document.title = "post.to/#" + newAnchor; 
 
 		anchor = newAnchor;
 		wasEdited = false;
