@@ -864,9 +864,9 @@
 		}
 	}
    
-   window.addEventListener("beforeunload",  function() {txtArea.value = "beforeunload\n" + txtArea.value; saveContentToDisk(); }); 
-   window.addEventListener("pagehide", function() {txtArea.value = "pagehide\n" + txtArea.value; });
-   document.addEventListener("visibilitychange", function() {txtArea.value = "visibilitychange" + (document.hidden ? 0 : 1) + "\n" + txtArea.value;  });  // saveContentToDisk();
+   window.addEventListener("beforeunload",  function() {txtArea.value = "beforeunload\n" + txtArea.value; saveContentToDisk(); }); // saveContentToDisk(); 
+   window.addEventListener("pagehide", function() {txtArea.value = "pagehide\n" + txtArea.value; saveContentToDisk(); });
+   document.addEventListener("visibilitychange", function() {txtArea.value = "visibilitychange" + (document.hidden ? 0 : 1) + "\n" + txtArea.value; if (document.hidden) { saveContentToDisk(); } }); 
    window.addEventListener("unload",  function() {txtArea.value = "unload\n" + txtArea.value });
    txtArea.addEventListener("blur",   function() {txtArea.value = "blur\n" + txtArea.value });
 
