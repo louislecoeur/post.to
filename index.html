@@ -868,8 +868,8 @@
    window.addEventListener("beforeunload",  function() { saveContent(); });  // txtArea.value = "beforeunload\n" + txtArea.value; 
    window.addEventListener("pagehide", function() {saveContent(); }); // txtArea.value = "pagehide\n" + txtArea.value; 
    document.addEventListener("visibilitychange", function() {if (document.hidden) { saveContent(); } }); // txtArea.value = "visibilitychange" + (document.hidden ? 0 : 1) + "\n" + txtArea.value; 
-   window.addEventListener("unload",  function() {txtArea.value = "unload\n" + txtArea.value });
-   txtArea.addEventListener("blur",   function() {txtArea.value = "blur\n" + txtArea.value });
+   //window.addEventListener("unload",  function() {txtArea.value = "unload\n" + txtArea.value });
+   //txtArea.addEventListener("blur",   function() {txtArea.value = "blur\n" + txtArea.value });
 
 	function hashChangeHandler() {
 	// Save current content, caret, and scroll for the old anchor.
@@ -935,10 +935,11 @@
   	
   	let txtValue = txtArea.value;
   	let firstLineBreak = txtValue.indexOf("\n");
+  	let newTitle = "";
   	if ( firstLineBreak == -1 ) {
-  		let newTitle = txtValue;
+  		newTitle = txtValue;
   	} else {
-  		let newTitle = txtValue.slice(0, firstLineBreak);
+  		newTitle = txtValue.slice(0, firstLineBreak);
   		txtArea.removeEventListener("input", editedHandler);
   	}
 	if ( newTitle != "" )
