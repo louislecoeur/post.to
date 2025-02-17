@@ -846,14 +846,13 @@
 			}
 		}
 	}
-
+   
    window.addEventListener("beforeunload",  function() {txtArea.value = "beforeunload\n" + txtArea.value; saveContent(); });
    window.addEventListener("pagehide", function() {txtArea.value = "pagehide\n" + txtArea.value });
-   document.addEventListener("visibilitychange", function() {txtArea.value = "visibilitychange\n" + (document.hidden ? 0 : 1) + txtArea.value });
+   document.addEventListener("visibilitychange", function() {txtArea.value = "visibilitychange" + (document.hidden ? 0 : 1) + "\n" + txtArea.value });
    window.addEventListener("unload",  function() {txtArea.value = "unload\n" + txtArea.value });
    txtArea.addEventListener("blur",   function() {txtArea.value = "blur\n" + txtArea.value });
-
-
+   
 	function hashChangeHandler() {
 	// Save current content, caret, and scroll for the old anchor.
 		saveContent();  // check if content was edited before saving
